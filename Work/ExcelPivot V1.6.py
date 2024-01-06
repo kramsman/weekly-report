@@ -1,0 +1,254 @@
+# Read csv exported from VoterLetters and report
+# V1.1 produce a tab for each team
+# V1.2 remove all the first wee for grouping - use offset AND input modified file containing multi-org in one
+#     also removed ExcelWriter section which wasn't used
+# V1/3 Runs off Aarons file across all orgs & campaigns.  Puts reports in dir based off input file name.
+#   Some vars were renamed in Aaron's file.
+# V1.4 report by month as well as week
+# V 1.5 added pivot reports for ROV enterprise across all orgs
+#     use fulfilled_count rather than requested_count in tables
+# V1.6 incorporate autosizexls to size cols before titles added
+#  1/25/22 Split Team reports into Summ and wWriters
+
+# TODO: Make sure address counts tie to Aarons - assigned to writers vs rooms
+
+
+from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+from datetime import datetime
+import datetime as dt
+import xlsxwriter
+import pymsgbox
+# from uszipcode import SearchEngine
+import os
+from pathlib import *
+# import re
+# import sys
+# import time
+import pathlib
+import glob
+# import functools
+# import operator
+
+import openpyxl
+from openpyxl import Workbook
+from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.utils import column_index_from_string
+from random import random
+import numpy as np
+import pandas as pd
+
+from tkinter import *
+from tkinter import Tk  # from tkinter import Tk for Python 3.x
+from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askdirectory
+from tkinter import messagebox
+
+# from https://stackoverflow.com/questions/13197574/openpyxl-adjust-column-width-size
+def autosizexls(ws):
+    # print(ws.title)
+    dims = {}
+    for row in ws.rows:
+        for cell in row:
+            if cell.value:
+                # dims[cell.column] = max((dims.get(cell.column, 0), len(str(cell.value))))
+                # print("cell value", cell.value, "data_type",cell.data_type)
+                if(cell.data_type == 'd'):
+                    zz = 10
+                else: zz = len(str(cell.value))
+                # dims[cell.column_letter] = max((dims.get(cell.column_letter, 0), len(str(cell.value))))
+                dims[cell.column_letter] = max((dims.get(cell.column_letter, 0), zz))
+
+    for col, value in dims.items():
+        # print(col , value)
+        ws.column_dimensions[col].width = value + 1
+
+pymsgbox.alert("Download data from VoterLetters before running.\n\n"\
+               "1. Addresses assigned:\nVoterLetters ROV > Reports > New Report > All Parent Campaign Address Requests.\nDates 1/1/22 to prior Monday INCLUSIVE.\n\n"\
+               "2. Users (to assign google read permissions):\nVoterLetters Child Organizations > Export Users to CSV.\n",\
+               "Get ready!")
+
+reportBy = pymsgbox.confirm('[W]eekly or [M]onthly report?', 'Date Format', ["W", "M", 'Cancel'])
+if reportBy.lower() == 'm':
+    reportVar = "month"
+elif reportBy.lower() == 'w':
+    reportVar = "data_week_of"
+else:
+    exit()
+
+# Put enterprise wide reports in a separate directory
+# outputDirAdmin = os.path.expanduser("~/Dropbox/Postcard Files/Other/VoterLetters/Reports/VL ROVWide Reports")
+outputDirROV = os.path.expanduser("~/Dropbox/Postcard Files/VL Admin Reports")
+
+# Dir to prompt to start looking for input file
+inputDir = os.path.expanduser("/Users/Denise/Downloads/")
+# Base of report file; input file name is used to create a sub dir under this
+outputDir = os.path.expanduser("~/Dropbox/Postcard Files/VL Org Reports")
+
+Tk().withdraw()  # we don't want a full GUI, so keep the root window from appearing
+
+# InputFile = askopenfilename(initialdir=os.path.expanduser(r"/Users/Denise/Downloads/"),title="Select VoterLetters address export file", filetypes=(("CSV files", "*.csv "),))  # show an "Open" dialog box and return the path to the selected file
+InputFile = askopenfilename(initialdir=os.path.expanduser(inputDir),title="Select VoterLetters address export file (all-parent-campaigns-requests-yyyy-mm-dd.csv)", filetypes=(("CSV files", "*.csv "),))  # show an "Open" dialog box and return the path to the selected file
+# tried but failed InputFile = askopenfilename(initialdir=os.path.expanduser(inputDir),title="Select VoterLetters address export file", filetypes=('VL files','all-parent*.*'))  # show an "Open" dialog box and return the path to the selected file
+# TODO: set filter to only display fileNAMES that are proper input, such as 'all-parent*.csv'
+
+# head, tail = os.path.split(InputFile)
+VLdatafile = os.path.basename(InputFile)
+outputDirWFile = os.path.join(outputDir,Path(InputFile).stem + "-" + reportBy)
+filedate = Path(InputFile).stem[-10:]
+
+# CHECK and create dir if not exists
+if not os.path.isdir(outputDirWFile):
+    # pymsgbox.alert("Input Path does not exist. Creating.\n\n" + outputDirWFile, "Fixing Directory Structure")
+    # FIXME: close Tkinter window here
+    os.makedirs(outputDirWFile)
+
+# Create dataframe of excel sheet data
+xl = pd.read_csv(InputFile)
+
+# replace '/' in some input fields (like org name) which cause issues when used as directories
+xl['org_name'] = xl['org_name'].str.replace("/","-").str.replace("'","-").str.replace(",","-")
+xl['team_name'] = xl['team_name'].str.replace("/","-").str.replace("'","-").str.replace(",","-")
+
+# create a date field as a datetime object
+xl['date2'] = pd.to_datetime(xl['created_at'])
+# xl['date2'] = pd.to_datetime("2021/02/01")
+
+# 'daysoffset' will contain the weekday 'day of week' as integers so we can step back to Monday
+xl['daysoffset'] = xl['date2'].apply(lambda x: x.weekday())
+# We apply, row by row (axis=1) a timedelta operation
+xl['data_week_of'] = xl.apply(lambda x: x['date2'] - dt.timedelta(days=x['daysoffset']), axis=1).dt.date
+xl['month'] = pd.to_datetime(xl['date2']).dt.to_period('M')
+
+xl['team2']=xl['team_name'] # Need two copies of team variable for pivots - one for row, one for cols # FIXME: I believe this was removed and two tables used
+xl.fillna(" No Team", inplace = True) # note space in front for sorting
+xl = xl[~xl['org_name'].isin(['ROV Test Silo','ROV Training Silo','ROV Sample Silo'])]  # select records for one Org
+teams = xl['team_name'].unique()
+teams.sort()
+
+state_list = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "VI", "WA", "WV", "WI", "WY"]
+xl['master_campaign'] = xl['parent_campaign_name'].apply(lambda x: x[0:2])
+master_campaigns = xl['master_campaign'].unique()
+# delete those that are not states (some campaign names ended up 'do not use VA-Loudon...' etc  # FIXME: we may want to include these evven though state is bad; many werre written in "DO not use VA-xxx"
+master_campaigns = [x for x in master_campaigns if x in state_list]
+master_campaigns.sort()
+
+### Create a sheet w pivot tabs for all orgs in separate directory
+print("Org: Enterprise wide")
+
+file = os.path.join(os.path.expanduser(outputDirROV), "ROVWide VoterLetters Summary " + filedate + "-" + reportBy + ".xlsx")
+# Use Pandas dataframes here because it supports pivot tables and openpyxl does not
+writer = pd.ExcelWriter(file)
+
+# Run standalone pivot on campaigns
+# df_pt = pd.pivot_table(xlo, columns=['data_week_of'], index=['parent_campaign_name', 'team_name'], values=['addresses_count'], margins=True, dropna=True,aggfunc=np.sum)
+df_pt = pd.pivot_table(xl, columns=[reportVar], index=['parent_campaign_name'],
+                       values=['addresses_count'], margins=True, dropna=True, aggfunc=np.sum)
+df_pt.to_excel(writer, sheet_name='Campaigns', startrow=5)  # summary sheet of al teams combined
+
+df_pt = pd.pivot_table(xl, columns=[reportVar], index=['org_name'],
+                       values=['addresses_count'], margins=True, dropna=True, aggfunc=np.sum)
+df_pt.to_excel(writer, sheet_name='Rooms', startrow=5)  # summary sheet of al teams combined
+
+for m in master_campaigns:
+    xlm = xl[xl['master_campaign'] == m] # select records for one Org
+    df_pt = pd.pivot_table(xlm, columns=[reportVar], index=['master_campaign', 'parent_campaign_name'], values=['addresses_count'],
+                           margins=True, dropna=True, aggfunc=np.sum)
+    # print("Sheet name = ", m)
+    df_pt.to_excel(writer, sheet_name=m, startrow=5)
+writer.save()
+
+
+# Use openpyxl here to reference and change individual cells for titles
+wb = openpyxl.load_workbook(file)
+
+for sh in wb.worksheets:
+    autosizexls(sh)
+
+for sh in wb.worksheets:
+    sh['A1'].value = "ROVWide"
+    sh['A1'].font = Font(b=True, size=20)
+    if sh.title not in ['Campaigns','Rooms']:
+        sh['A2'].value = "Campaign State: " + sh.title
+    sh['A2'].font = Font(b=True, size=16)
+
+    if reportBy.lower() == "m":
+        sh['A3'].value = "By Month"
+    else:
+        sh['A3'].value = "By Week"
+    sh['A3'].font = Font(b=True, size=12)
+
+    sh['A4'].value = "Data Source: " + VLdatafile
+    sh['A4'].font = Font(size=12)
+
+wb.save(file)
+# Done with standalone enterprise wide report
+
+orgs = xl['org_name'].unique()
+orgs[::-1].sort() # FIXME: Sort
+
+for org in orgs:
+    print("Org: " + org)
+    xlo = xl[xl['org_name'] == org] # select records for one Org
+
+    # Produce a workbook for each org with a filename like: "CA-North Coast VoterLetters Summary 2021-08-02.xlsx"
+    file = os.path.join(os.path.expanduser(outputDirWFile),org + " VoterLetters Summary " + filedate + "-" + reportBy + ".xlsx")
+    # Use Pandas dataframes here because it supports pivot tables and openpyxl does not
+
+    teams = xlo['team_name'].unique()
+    teams.sort() # FIXME: Sort by team name
+    writer = pd.ExcelWriter(file)
+
+    # Run standalone pivot on campaigns
+    # df_pt = pd.pivot_table(xlo, columns=['data_week_of'], index=['parent_campaign_name', 'team_name'], values=['addresses_count'], margins=True, dropna=True,aggfunc=np.sum)
+    df_pt = pd.pivot_table(xlo, columns=[reportVar], index=['parent_campaign_name', 'team_name'], values=['addresses_count'], margins=True, dropna=True,aggfunc=np.sum)
+    df_pt.to_excel(writer, sheet_name='Campaigns', startrow = 5) # summary sheet of al teams combined
+
+    # Run standalone pivot on writers/teams
+    df_pt = pd.pivot_table(xlo, columns=[reportVar], index=['team_name'], values=['addresses_count'], margins=True, dropna=True,
+                           aggfunc=np.sum)
+    df_pt.to_excel(writer, sheet_name='Team Summs', startrow = 5) # summary sheet of al teams combined
+
+    # df_pt = pd.pivot_table(xlo, columns=['team2'], index=['team_name', 'writer_name'], values=['addresses_count'], margins=True, dropna=True,
+    df_pt = pd.pivot_table(xlo, columns=[reportVar], index=['team_name', 'writer_name'], values=['addresses_count'], margins=True, dropna=True,
+                           aggfunc=np.sum)
+    df_pt.to_excel(writer, sheet_name='Teams wWrtrs', startrow = 5) # summary sheet of al teams combined
+
+    for t in teams:
+        xlt = xlo[xlo['team_name'] == t]
+        df_pt = pd.pivot_table(xlt, columns=[reportVar], index=['team_name', 'writer_name'], values=['addresses_count'], margins=True,
+                               dropna=True, aggfunc=np.sum)
+        df_pt.to_excel(writer, sheet_name=t[:30], startrow = 5) # had to take 30 chars of t because xl limit on sheet name length
+    writer.save()
+
+    # Use openpyxl here to reference and change individual cells for titles
+    wb = openpyxl.load_workbook(file)
+
+    for sh in wb.worksheets:
+        autosizexls(sh)
+
+    for sh in wb.worksheets:
+     #   room = os.path.pathsplitext(InputFile)[0].split("/")[-1].split("_")[0]
+        # print(os.path.split(file))
+        sh['A1'].value = "Room/Group: " + org
+        sh['A1'].font = Font(b=True, size=20)
+        # if sh.title != 'Campaigns':
+        if sh.title not in ['Campaigns','Team Summs','Teams wWrtrs']:
+            sh['A2'].value = "Team: " + sh.title
+        sh['A2'].font = Font(b=True, size=16)
+
+        if sh.title != 'All Teams':
+            if reportBy.lower() == "m":
+                sh['A3'].value = "By Month"
+            else:
+                sh['A3'].value = "By Week"
+            sh['A3'].font = Font(b=True, size=12)
+
+        sh['A4'].value = "Data Source: " + VLdatafile
+        sh['A4'].font = Font(size=12)
+    wb.save(file)
+
+print("\nDone with all orgs.")
+pymsgbox.alert("Org reports produced. In:\n\n" + outputDir + "\n\n\nROV Wide reports produced. In:\n\n" + outputDirROV, "Done!")
+
+exit()
