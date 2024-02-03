@@ -1,6 +1,6 @@
 """ produce weekly reports on Sincere and upload them to Google drive.
 Assign permissions to organizers which sends a Google notification.
-Taken from 'Weekley VL Rpt V4.3.py' but no more version designations becausee using Git.
+Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because using Git.
  """
 
 
@@ -37,6 +37,7 @@ Taken from 'Weekley VL Rpt V4.3.py' but no more version designations becausee us
 # TODO: add mapping email from organizer to requested email
 # TODO: add excluded email list to skip giving permission
 # TODO: format all numbers with commas
+# TODO: remove pymsgbox references
 
 # from datetime import datetime
 import datetime as dt
@@ -45,8 +46,9 @@ import inspect
 # from apiclient.discovery import build
 import logging
 import os
+from loguru import logger
 import pathlib
-from pathlib import *
+# from pathlib import *
 # from tkinter import *
 from tkinter import Tk  # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askdirectory
@@ -63,7 +65,7 @@ import numpy as np
 import openpyxl
 import pandas as pd
 # import xlsxwriter
-# import pymsgbox
+import pymsgbox
 # from apiclient.http import MediaFileUpload  # needed even if Pycharm says not
 from googleapiclient.http import MediaFileUpload
 # from tkinter import messagebox
@@ -78,6 +80,21 @@ from openpyxl.styles import Font
 import shutil
 import traceback
 import re
+
+log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
+
+# determine if application is running as a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    # assume .exe is moved from subdirectory ./dist so reports go to same
+    # ROOT_PATH = os.path.dirname(sys.executable)
+    ROOT_PATH = pathlib.Path(sys.executable).parents[0]
+elif __file__:
+    # ROOT_PATH = os.path.dirname(__file__)
+    ROOT_PATH = pathlib.Path(__file__).parents[0]
+else:
+    ROOT_PATH = None
+# ROOT_PATH = str(ROOT_PATH)
+logger.debug(f"({ROOT_PATH=}")
 
 # for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
@@ -101,7 +118,7 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
                    'bill.becky.rov@gmail.com',
                    'carey@harmonicsystems.net',
                    'gideon.asher1@gmail.com',
-                   'jake@centerforcommonground.org']
+                   ]
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
@@ -162,56 +179,155 @@ def autosizexls(ws):
         ws.column_dimensions[col].width = value + 1
 
 
-def get_creds_new():
-    """ get credentials needed to set up API service.  Was inline code; this cleaned things up."""
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if not os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        flow = InstalledAppFlow.from_client_secrets_file(
-            'credentials.json', SCOPES)
+# def get_creds_new():
+#     """ get credentials needed to set up API service.  Was inline code; this cleaned things up."""
+#     creds = None
+#     # The file token.json stores the user's access and refresh tokens, and is
+#     # created automatically when the authorization flow completes for the first
+#     # time.
+#     if not os.path.exists('token.json'):
+#         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+#         flow = InstalledAppFlow.from_client_secrets_file(
+#             'credentials.json', SCOPES)
+#         creds = flow.run_local_server(port=0)
+
+#     # If there are no (valid) credentials available, let the user log in.
+#     if not creds or not creds.valid:
+#         if creds and creds.expired and creds.refresh_token:
+#             os.remove('token.json')
+#             creds.refresh(Request())
+#         # else:
+#             flow = InstalledAppFlow.from_client_secrets_file(
+#                 'credentials.json', SCOPES)
+#             creds = flow.run_local_server(port=0)
+
+#         # Save the credentials for the next run
+#         with open('token.json', 'w') as token:
+#             token.write(creds.to_json())
+#     return creds
+
+
+# def get_creds(scopes):
+    # """ get credentials needed to set up API service.  Was inline code; this cleaned things up."""
+    # creds = None
+    # # TODO this needs to be reworked if creds expired then delete token.json and force Google verification
+    # # The file token.json stores the user's access and refresh tokens, and is
+    # # created automatically when the authorization flow completes for the first
+    # # time.
+    # if os.path.exists('token.json'):
+    #     creds = Credentials.from_authorized_user_file('token.json', scopes)
+    # # If there are no (valid) credentials available, let the user log in.
+    # if not creds or not creds.valid:
+    #     if creds and creds.expired and creds.refresh_token:
+    #         # os.remove('token.json')  # BEK 3/6/23 tried to fix by adding this but needs more
+    #         creds.refresh(Request())
+    #     else:
+    #         flow = InstalledAppFlow.from_client_secrets_file(
+    #             'credentials.json', SCOPES)
+    #         creds = flow.run_local_server(port=0)
+
+    #     # Save the credentials for the next run
+    #     with open('token.json', 'w') as token:
+    #         token.write(creds.to_json())
+    # return creds
+    
+
+def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=None, always_create=False,
+              write_token=True):
+    """ Gets credentials used in setting up google API services.  From webhook 1/6/24.
+
+    Parameters
+    ----------
+    cred_dir :
+    token_file :
+    """
+
+    import os
+    # import pathlib
+    # import pymsgbox
+    # from google.auth.transport.requests import Request
+    import google.auth.transport.requests
+    from google.oauth2.credentials import Credentials
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    import pathlib
+
+    def bek_cred_flow():
+        logger.debug("get_creds using credentials -going to call 'InstalledAppFlow.from_client_secrets_file'")
+        flow = InstalledAppFlow.from_client_secrets_file(cred_file, scopes)
+        logger.debug(f"got flow: {flow.__dict__=}")
+        # creds = flow.run_local_server(port=0)
+        logger.debug("going to call 2nd part of flow, 'flow.run_local_server(port=0)'")
         creds = flow.run_local_server(port=0)
+        logger.debug(f"{creds.__dict__=}")
+        return creds
+            
+    logger.debug(f"in get_creds with: {scopes=}, {cred_file=}, {cred_dir=}, {token_file=}, {token_dir=},"
+                 f" {always_create=}, {write_token=}")
+    if cred_dir is None:
+        cred_dir = ROOT_PATH
+    if cred_file is None:
+        cred_file = 'credentials.json'
+    cred_w_path = cred_dir / cred_file
 
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            os.remove('token.json')
-            creds.refresh(Request())
-        # else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
+    if token_dir is None:
+        token_dir = ROOT_PATH
+    if token_file is None:
+        token_file = 'token.json'
+    token_w_path = token_dir / token_file
 
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-    return creds
+    # token_w_path = pathlib.Path(token_dir) / 'token.json'
 
+    # SCOPES = ['https://www.googleapis.com/auth/drive']
+    # TODO: Add code to delete token.json if creds fails.
 
-def get_creds(scopes):
-    """ get credentials needed to set up API service.  Was inline code; this cleaned things up."""
+    # FIXME this should check token (w refresh?) then credential
+    if not cred_w_path.is_file():
+        pymsgbox.alert(f"'{cred_w_path}' is missing. Copy it from another dir or download from API manager")
+        # exit()
+
+    if not token_w_path.is_file() and not cred_w_path.is_file():
+        logger.error(f"'{token_w_path}' and {cred_w_path} are both missing.")
+        pymsgbox.alert(f"'{token_w_path}' and {cred_w_path} are both missing.")
+        exit()
+
     creds = None
-    # TODO this needs to be reworked if creds expired then delete token.json and force Google verification
+
     # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', scopes)
+    # created automatically when the authorization flow completes for the first time.
+    if token_w_path.is_file():
+        # Credentials.from_authorized_user_file. Creates a Credentials instance from parsed authorized user info.
+        # does it work from credentials, token, or either?
+        # from_authorized_user_file - Creates a Credentials instance from an authorized user json file.
+        creds = Credentials.from_authorized_user_file(token_w_path, scopes)
+        logger.error(f"get_creds using token: {creds.__dict__=}")
+        # logger.error(f"{dir(creds)=}")  # only names, not values, and includes builtins
+        # logger.error(f"{vars(creds)=}")  # same as __dict__
+        # logger.error(f"{help(creds)=}")
+        # exit()
+
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            # os.remove('token.json')  # BEK 3/6/23 tried to fix by adding this but needs more
-            creds.refresh(Request())
+            try:
+                # refresh(self, request) Refreshes the access token.
+                # creds.refresh(Request())
+                request = google.auth.transport.requests.Request()
+                creds.refresh(request)
+                logger.error("Creds refresh worked using token")
+                logger.debug(f"{creds.__dict__=}")
+            except Exception as e:
+                pymsgbox.alert(f"Creds(request)) did not work using token, {e=}")
+                logger.debug("refresh failed - going to run bek_cred_flow")
+                creds = bek_cred_flow()
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-
+            creds = bek_cred_flow()
+            
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+        if write_token:
+            logger.debug("writing token")
+            with open(token_w_path, 'w') as token:
+                token.write(creds.to_json())
+    logger.debug(f"ready to leave get_creds: {creds.__dict__=}")
     return creds
 
 
@@ -1002,7 +1118,8 @@ def delete_list_of_google_files(drive_service, file_id_list):
 
 def create_google_services():
     """ create and returns a Google service for drive and sheet so we can read from each """
-    creds = get_creds(SCOPES)
+    creds = get_creds(SCOPES, cred_file='credentials.json', cred_dir=ROOT_PATH, token_file='token.json', token_dir=ROOT_PATH, always_create=False,
+              write_token=True)
     try:
         drive_service = build('drive', 'v3', credentials=creds)
         sheet_service = build('sheets', 'v4', credentials=creds)
@@ -1073,9 +1190,9 @@ def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
                 if not SEND_PERMISSION_EMAIL_FLAG:
                     permission_msg = None
                 elif file_name_wo_ext[-2:].lower() == '-m':
-                    permission_msg = (f"A new MONTHLY VoterLetters summary report is available for your room. "
-                                      f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                                      f"Click to open.")
+                    permission_msg = ("A new MONTHLY VoterLetters summary report is available for your room. "
+                                      "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                                      "Click to open.")
                 else:
                     permission_msg = (f"A new WEEKLY VoterLetters summary report is available for your room. "
                                       f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
