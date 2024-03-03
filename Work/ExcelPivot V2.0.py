@@ -7,7 +7,7 @@
 # V1.4 report by month as well as week
 # V 1.5 added pivot reports for ROV enterprise across all orgs
 #     use fulfilled_count rather than requested_count in tables
-# V1.6 incorporate autosizexls to size cols before titles added
+# V1.6 incorporate autosize_xls_cols to size cols before titles added
 #  1/25/22 Split Team reports into Summ and wWriters
 # V2.0 incorporate uploading to google sheets and adding permissions.  Started as ExcelPivot V1.6
 # Updates taken from "VL reports via Google API V1.0"

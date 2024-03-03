@@ -1,5 +1,5 @@
 # test import an outide file into a program
-# routine autosizexls sets column widths on a workbook opened with openpyxl
+# routine autosize_xls_cols sets column widths on a workbook opened with openpyxl
 
 import xlsxwriter
 import datetime

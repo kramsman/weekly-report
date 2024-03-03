@@ -47,7 +47,7 @@ import inspect
 import logging
 import os
 from loguru import logger
-import pathlib
+from pathlib import Path
 # from pathlib import *
 # from tkinter import *
 from tkinter import Tk  # from tkinter import Tk for Python 3.x
@@ -80,17 +80,19 @@ from openpyxl.styles import Font
 import shutil
 import traceback
 import re
+from bekutils import setup_loguru
 
-log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
+# log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
+setup_loguru("DEBUG", "DEBUG")
 
 # determine if application is running as a script file or frozen exe
 if getattr(sys, 'frozen', False):
     # assume .exe is moved from subdirectory ./dist so reports go to same
     # ROOT_PATH = os.path.dirname(sys.executable)
-    ROOT_PATH = pathlib.Path(sys.executable).parents[0]
+    ROOT_PATH = Path(sys.executable).parents[0]
 elif __file__:
     # ROOT_PATH = os.path.dirname(__file__)
-    ROOT_PATH = pathlib.Path(__file__).parents[0]
+    ROOT_PATH = Path(__file__).parents[0]
 else:
     ROOT_PATH = None
 # ROOT_PATH = str(ROOT_PATH)
@@ -256,7 +258,12 @@ def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=
         flow = InstalledAppFlow.from_client_secrets_file(cred_file, scopes)
         logger.debug(f"got flow: {flow.__dict__=}")
         # creds = flow.run_local_server(port=0)
-        logger.debug("going to call 2nd part of flow, 'flow.run_local_server(port=0)'")
+        msg = ("Calling the 2nd part of flow, 'flow.run_local_server(port=0)'"
+                 "\n\n   - Use 'tech@centerforcommonground.org' google login."
+                 "\n   - Must say process completed - close this window."
+                 "\n   - If you get error 403, hit back in the browser and try again")
+        logger.debug(msg)
+        pymsgbox.alert(msg,"Verify Google Account")
         creds = flow.run_local_server(port=0)
         logger.debug(f"{creds.__dict__=}")
         return creds
@@ -275,7 +282,7 @@ def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=
         token_file = 'token.json'
     token_w_path = token_dir / token_file
 
-    # token_w_path = pathlib.Path(token_dir) / 'token.json'
+    # token_w_path = Path(token_dir) / 'token.json'
 
     # SCOPES = ['https://www.googleapis.com/auth/drive']
     # TODO: Add code to delete token.json if creds fails.
@@ -316,7 +323,9 @@ def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=
                 logger.error("Creds refresh worked using token")
                 logger.debug(f"{creds.__dict__=}")
             except Exception as e:
-                pymsgbox.alert(f"Creds(request)) did not work using token, {e=}")
+                pymsgbox.alert(f"Creds(request)) did not work using token.\nGoing to prompt for Google login."
+                               f"\n\nError=\n{e}",
+                               "Google Credential Issue")
                 logger.debug("refresh failed - going to run bek_cred_flow")
                 creds = bek_cred_flow()
         else:
@@ -500,37 +509,6 @@ def bek_text_box(box_title, title2, txt, buttons=None):
     return event
 
 
-# def display_textbox(box_title, title2, txt, col_row=None):
-#     if not col_row:
-#         col_row = 400, 200
-#
-#     layout = [
-#         [sg.Text(title2)],
-#         [sg.Multiline(txt, autoscroll=False, horizontal_scroll=True, expand_x=True,
-#                       expand_y=True, enable_events=True)],
-#         [sg.Ok(focus=True), sg.Exit()],
-#     ]
-#
-#     event, values = sg.Window(box_title, layout, size=col_row).read(close=True)
-#     return event
-#
-#
-#     if not col_row:
-#         col_row = 700, 500
-#
-#     layout = [
-#         [sg.Text("First code:")],
-#         [sg.Multiline(msg, autoscroll=False, horizontal_scroll=True, expand_x=True,
-#                       expand_y=True, enable_events=True)],
-#         [sg.Ok()],
-#         # [sg.Multiline(lines, key='lines',  size=col_row, autoscroll=True)],
-#     ]
-#
-#     # event, values = sg.Window('Code Review', layout, size=col_row).read(close=True)
-#     event, values = sg.Window(box_title, layout, size=col_row).read(close=True)
-
-
-
 def get_dir_name(box_title, title2, initial_dir):
     """ show an "Open" dialog box and return the selected directory. Replaced askdirectory with pyeasygui
     :param title2:
@@ -586,7 +564,7 @@ def get_file_name(box_title, title2, initial_dir):
 
 def read_sincere_request_file(input_file):
     """ read the downloaded Sincere csv of requests and create df with all necessary variables"""
-    request_df = pd.read_csv(input_file)
+    request_df = pd.read_csv(input_file, na_filter=False)
 
     # Check heading fields in Sincere request file to ensure fields didn't move/change
     check_df_headers(request_df,
@@ -649,6 +627,9 @@ def make_pivot(writer, df, report_var, index_vars, aggfunc, sheet_name, freeze_c
     df_pt = pd.pivot_table(df, columns=report_var, index=index_vars,
                            values=['addresses_count'], margins=True, dropna=True, aggfunc=aggfunc)
     df_pt = df_pt.sort_index(axis=1, ascending=False)
+    if sheet_name == '':
+        sheet_name = "Blank Team"
+    logger.debug(f"{sheet_name=}")
     df_pt.to_excel(writer, sheet_name=sheet_name, startrow=6)
     ws = writer.sheets[sheet_name]
     # ws.freeze_panes(freeze_row, freeze_col)
@@ -688,8 +669,10 @@ def make_chart(writer, df, index_vars, sheet_name):
         Reference,
     )
 
+    # df_pt = pd.pivot_table(df, columns='created_at', index=index_vars,
+    #                        values=['addresses_count'], margins=True, dropna=True, aggfunc=np.sum)
     df_pt = pd.pivot_table(df, columns='created_at', index=index_vars,
-                           values=['addresses_count'], margins=True, dropna=True, aggfunc=np.sum)
+                           values=['addresses_count'], margins=True, dropna=True, aggfunc='sum')
     df_pt = df_pt.sort_index(axis=1, ascending=False)
     df_pt = df_pt.drop(df_pt.columns[0], axis=1)  # all column from margins=True (need all row)
     df_pt.to_excel(writer, sheet_name=sheet_name, startrow=6)
@@ -750,15 +733,22 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
     writer = pd.ExcelWriter(excel_output_file, engine="openpyxl")
 
     # create chart of daily requests
+    logger.debug("calling make_chart")
     make_chart(writer, sincere_df, 'factory_name', 'Chart')
 
     # Run pivot on Master without county campaigns
-    make_pivot(writer, sincere_df, [report_var], ['master_campaign'], np.sum, 'Masters', 'B10')
+    logger.debug("calling make_pivot")
+    # make_pivot(writer, sincere_df, [report_var], ['master_campaign'], np.sum, 'Masters', 'B10')
+    make_pivot(writer, sincere_df, [report_var], ['master_campaign'], 'sum', 'Masters', 'B10')
 
     # Run standalone pivot on campaigns
-    make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], np.sum, 'Campaigns', 'C10')
+    logger.debug("calling make_pivot")
+    # make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], np.sum, 'Campaigns', 'C10')
+    make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
 
-    make_pivot(writer, sincere_df, [report_var], ['org_name'], np.sum, 'Rooms', 'B10')
+    logger.debug("calling make_pivot")
+    # make_pivot(writer, sincere_df, [report_var], ['org_name'], np.sum, 'Rooms', 'B10')
+    make_pivot(writer, sincere_df, [report_var], ['org_name'], 'sum', 'Rooms', 'B10')
 
     wb = writer.book
 
@@ -816,22 +806,27 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
         writer = pd.ExcelWriter(excel_output_file, engine='openpyxl')
 
         # pivot on campaigns
-        make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], np.sum, 'Campaigns', 'C10')
+        # make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], np.sum, 'Campaigns', 'C10')
+        make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
 
         # pivot on writers/teams
-        make_pivot(writer, xlo, [report_var], ['team_name'], np.sum, 'Team Sums', 'B10')
+        # make_pivot(writer, xlo, [report_var], ['team_name'], np.sum, 'Team Sums', 'B10')
+        make_pivot(writer, xlo, [report_var], ['team_name'], 'sum', 'Team Sums', 'B10')
 
-        make_pivot(writer, xlo, [report_var], ['team_name', 'writer_name'], np.sum, 'Teams w Writers', 'C10')
+        # make_pivot(writer, xlo, [report_var], ['team_name', 'writer_name'], np.sum, 'Teams w Writers', 'C10')
+        make_pivot(writer, xlo, [report_var], ['team_name', 'writer_name'], 'sum', 'Teams w Writers', 'C10')
 
         # show COUNT (rather than np.sum) of requests to identify potential organizers
         make_pivot(writer, xlo, [report_var], ['team_name', 'writer_name'], 'count', 'Teams w Counts', 'C10')
         # TODO: change var label on address_count to request_count
 
         # Meika's two reports - cols by campaign not date
-        make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], np.sum, 'Team by Campaigns',
-                   'B11')
+        # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], np.sum, 'Team by Campaigns', 'B11')
+        make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], 'sum', 'Team by Campaigns', 'B11')
 
-        make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], np.sum,
+        # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], np.sum,
+        #            'Teams w Writers by Campaign', 'B11')
+        make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], 'sum',
                    'Teams w Writers by Campaign', 'B11')
 
         # # TODO: sort campaigns by master latest date (which?) then campaign latest date, not alpha
@@ -839,7 +834,8 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
         for team in teams:
             xlt = xlo[xlo['team_name'] == team]
             shname = team[:30]
-            make_pivot(writer, xlt, [report_var], ['team_name', 'writer_name'], np.sum, shname, 'C10')
+            # make_pivot(writer, xlt, [report_var], ['team_name', 'writer_name'], np.sum, shname, 'C10')
+            make_pivot(writer, xlt, [report_var], ['team_name', 'writer_name'], 'sum', shname, 'C10')
 
         # Insert a notes tab as first one. Must be openpyxl because excelwriter is dataframe only
         wb = writer.book
@@ -949,7 +945,7 @@ def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id)
     if isinstance(drive_folder_id, str):
         drive_folder_id = [drive_folder_id]
 
-    file_name_wo_ext = pathlib.Path(file_to_upload_w_path).stem
+    file_name_wo_ext = Path(file_to_upload_w_path).stem
     file_metadata = {'name': file_name_wo_ext,
                      'mimeType': 'application/vnd.google-apps.spreadsheet',
                      "parents": drive_folder_id}
@@ -1044,8 +1040,8 @@ def upload_admin_report(drive_service, admin_report_to_upload):
     """ upload admin report from local to google drive
     """
     # do the upload
-    admin_report_to_upload = pathlib.Path(admin_report_to_upload)
-    file_name_wo_ext = pathlib.Path(admin_report_to_upload).stem  # filename without extension
+    admin_report_to_upload = Path(admin_report_to_upload)
+    file_name_wo_ext = Path(admin_report_to_upload).stem  # filename without extension
 
     # delete all files with same name in the destination admin folder
     # delete_file_list1 = get_google_file_ids(drive_service, file_name_wo_ext, ADMIN_REPORT_FOLDER_ID)
@@ -1149,7 +1145,7 @@ def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
     """ upload all room reports in directory and send notification via Google sheet permission
     """
 
-    report_dir_to_upload = pathlib.Path(str_dir_to_upload)
+    report_dir_to_upload = Path(str_dir_to_upload)
     folder_name = report_dir_to_upload.parts[-1]  # the last section of the path # TODO change to better function than parts
 
     # id list of folders to trash(delete)
@@ -1168,7 +1164,7 @@ def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
 
     report_files_df = pd.DataFrame(excel_report_files_lst, columns=['file_w_path'])
     report_files_df['file_name'] = report_files_df['file_w_path'].map(lambda x: os.path.basename(x))
-    report_files_df['file_name_wo_ext'] = report_files_df['file_w_path'].map(lambda x: pathlib.Path(x).stem)
+    report_files_df['file_name_wo_ext'] = report_files_df['file_w_path'].map(lambda x: Path(x).stem)
     report_files_df['room_name'] = report_files_df['file_name_wo_ext'].map(lambda x: x.split(' Sincere ')[0])
     # report_files_df['room_name'] = report_files_df['file_name_wo_ext'].map(lambda x: x[0:-34])
 
@@ -1295,16 +1291,17 @@ def main_program():
         # change to pyeasygui from pymsgbox
         choice = bek_text_box("REMINDER", "",
                       (f"\nDownload data from Sincere before running.\n\n"
-                       f"1. Addresses assigned in Sincere:\n"
-                       f"   All Enterprise>\n"
-                       f"   ROV>\n"
-                       f"   Reports>\n"
-                       f"   New Report>\n"
+                       f"1. Get addresses assigned in Sincere:\n\n"
+                       f"   All Enterprise >\n"
+                       f"   ROV >\n"
+                       f"   Reports >\n"
+                       f"   New Report >\n"
                        f"   All Parent Campaign Address Requests.\n\n"
-                       f"   Dates 1/1/22 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
-                       f"2. Users (to assign google read permissions):\n"
-                       f"   Sincere Child Organizations>\n"
-                       f"   Export Users to CSV>\n\n\n"),
+                       f"   Dates 1/1/24 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
+                       f"2. Get Sincere users (to assign google read permissions):\n\n"
+                       f"   Reports >\n"
+                       f"   New Report >\n"
+                       f"   All Users\n\n\n"),
                      ["Ok", "Exit"]
                     )
         if choice == "exit":
