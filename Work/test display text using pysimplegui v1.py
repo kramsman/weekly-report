@@ -92,7 +92,7 @@ ch = sg.popup_error("box text here.",  title="Title Here", auto_close=True, auto
 ch = sg.popup_yes_no(lines,  title="popup_yes_no", auto_close=True, auto_close_duration=99999)
 
 
-# pick = bek_text_box("Review Text", "This is first_code:", "Help me with this test.\nI relly mean it")
+# pick = text_box("Review Text", "This is first_code:", "Help me with this test.\nI relly mean it")
 pick = bek_text_box("Alert", "", "\n\nAdding Directory via bad_path_create", ["OK"])
 pick = bek_text_box("Review Text", "Instructions:", lines)
 pick = bek_text_box("Review Text", "Instructions:", lines, ["Run", "Upload", "Exit"])

@@ -80,7 +80,9 @@ from openpyxl.styles import Font
 import shutil
 import traceback
 import re
-from bekutils import setup_loguru
+from bekutils import setup_loguru, autosize_xls_cols, bad_path_create, exit_yes_no, exit_yes, \
+    text_box, get_file_name, get_dir_name, check_ws_headers
+from factory_and_campaign_subtotals import factory_and_campaign_subtotals
 
 # log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
 setup_loguru("DEBUG", "DEBUG")
@@ -163,22 +165,22 @@ noteLines = [
 ]
 
 
-def autosizexls(ws):
-    """ size all columns in worksheet to widest """
-    # from https://stackoverflow.com/questions/13197574/openpyxl-adjust-column-width-size
-    dims = {}
-    for row in ws.rows:
-        for cell in row:
-            if cell.value:
-                # dims[cell.column] = max((dims.get(cell.column, 0), len(str(cell.value))))
-                if cell.data_type == 'd':
-                    date_width = 10
-                else:
-                    date_width = len(str(cell.value))
-                dims[cell.column_letter] = max((dims.get(cell.column_letter, 0), date_width))
-
-    for col, value in dims.items():
-        ws.column_dimensions[col].width = value + 1
+# def autosize_xls_cols(ws):
+#     """ size all columns in worksheet to widest """
+#     # from https://stackoverflow.com/questions/13197574/openpyxl-adjust-column-width-size
+#     dims = {}
+#     for row in ws.rows:
+#         for cell in row:
+#             if cell.value:
+#                 # dims[cell.column] = max((dims.get(cell.column, 0), len(str(cell.value))))
+#                 if cell.data_type == 'd':
+#                     date_width = 10
+#                 else:
+#                     date_width = len(str(cell.value))
+#                 dims[cell.column_letter] = max((dims.get(cell.column_letter, 0), date_width))
+#
+#     for col, value in dims.items():
+#         ws.column_dimensions[col].width = value + 1
 
 
 # def get_creds_new():
@@ -398,15 +400,15 @@ def check_df_headers(df, vals):
                  )
 
 
-def bad_path_create(path, msg=None):
-    """ checks for directory existence and creates if not found"""
-    if msg is None:
-        msg = ("Directory:\n\n" + path + "\n\ndoes not exist.  Creating." +
-               "\n\nCalled from " + calling_func(level=2))
-    if not os.path.isdir(path):
-        # pymsgbox.alert(msg, "Adding Directory via bad_path_create")
-        bek_text_box("Alert", "", "\n\n" + msg, ["OK"])
-        os.makedirs(path)
+# def bad_path_create(path, msg=None):
+#     """ checks for directory existence and creates if not found"""
+#     if msg is None:
+#         msg = ("Directory:\n\n" + path + "\n\ndoes not exist.  Creating." +
+#                "\n\nCalled from " + calling_func(level=2))
+#     if not os.path.isdir(path):
+#         # pymsgbox.alert(msg, "Adding Directory via bad_path_create")
+#         text_box("Alert", "", "\n\n" + msg, ["OK"])
+#         os.makedirs(path)
 
 
 def calling_func(level=0):
@@ -418,149 +420,149 @@ def calling_func(level=0):
     return func
 
 
-def exit_yes_no(msg, title=None, display_exiting=False):
-    """ makes this choice to continue one line"""
-    if not title:
-        title = "Exit?"
-    # choice = pymsgbox.confirm(msg, title, ['Yes', 'No'])
-    choice = bek_text_box(title, "", "\n\n" + msg, ['Yes', 'No'])
-
-    if choice == "no":
-        if display_exiting:
-            # pymsgbox.alert("Exiting", "Alert")
-            bek_text_box("Alert", "", "\n\nExiting", ["Ok"])
-        exit()
-
-
-def exit_yes(msg: str, title: str = None, *, errmsg: str = None) -> None:
-    """ exits program after giving user a popup window and raising an error. """
-    msg = (msg + "\n\n\nExiting." +
-           f"\n\nCalled from {calling_func(level=3)}"
-           f"\nCalled from {calling_func(level=2)}"
-           f"\nCalled from {calling_func(level=1)}"
-           )
-    if not errmsg:
-        errmsg = msg.replace("\n", " ")  # dont fill the console with linefeeds
-    if not title:
-        title = "** Exiting Program **"
-    # pymsgbox.alert(msg, title)
-    bek_text_box(title, "", "\n\n" + msg, ["Ok"])
-    raise Exception(errmsg)
+# def exit_yes_no(msg, title=None, display_exiting=False):
+#     """ makes this choice to continue one line"""
+#     if not title:
+#         title = "Exit?"
+#     # choice = pymsgbox.confirm(msg, title, ['Yes', 'No'])
+#     choice = text_box(title, "", "\n\n" + msg, ['Yes', 'No'])
+#
+#     if choice == "no":
+#         if display_exiting:
+#             # pymsgbox.alert("Exiting", "Alert")
+#             text_box("Alert", "", "\n\nExiting", ["Ok"])
+#         exit()
 
 
-
-def bek_text_box(box_title, title2, txt, buttons=None):
-    """" Display text block with lines separated by \n and choice of buttons at bottom.
-    :param box_title: main heading on box
-    :type box_title: str
-    :param title2: 2nd title above text
-    :type title2: str
-    :param txt: text block with lines separated by \n
-    :type txt: str
-    :param buttons: list of button text, defaults to ['OK', 'Exit']
-    :type buttons: list of str
-    :return: lower case value of selected button
-    :rtype: str
-    """
-
-    if buttons is None:
-        buttons = ["OK", "Exit"]
-
-    col_factor = 3 # to scale windo equally
-    row_factor = 25 # to scale windo equally
-    max_cols = len(max(txt.split("\n"), key=len)) * col_factor
-    cols = max_cols
-    # v_scroll = False
-    col_limit = 80 * col_factor
-    col_min = 50 * col_factor
-    if cols > col_limit:
-        # v_scroll = True
-        cols = col_limit
-    elif cols < col_min:
-        cols = col_min
+# def exit_yes(msg: str, title: str = None, *, errmsg: str = None) -> None:
+#     """ exits program after giving user a popup window and raising an error. """
+#     msg = (msg + "\n\n\nExiting." +
+#            f"\n\nCalled from {calling_func(level=3)}"
+#            f"\nCalled from {calling_func(level=2)}"
+#            f"\nCalled from {calling_func(level=1)}"
+#            )
+#     if not errmsg:
+#         errmsg = msg.replace("\n", " ")  # dont fill the console with linefeeds
+#     if not title:
+#         title = "** Exiting Program **"
+#     # pymsgbox.alert(msg, title)
+#     text_box(title, "", "\n\n" + msg, ["Ok"])
+#     raise Exception(errmsg)
 
 
-    h_scroll = False
-    row_limit = 80
-    row_min = 10
-    max_rows = len(txt.split("\n"))
-    rows = max_rows
-    if rows > row_limit:
-        h_scroll = True
-        rows = row_limit
-    elif rows < row_min:
-        rows = row_min
 
-    layout = [
-        [sg.Text(title2,font=("Arial", 18))],
-        [sg.Multiline(txt, autoscroll=False, horizontal_scroll = h_scroll, expand_x=True,
-                      expand_y=True, enable_events=True )],
-        [sg.Button(text) for text in buttons],
-    ]
+# def text_box(box_title, title2, txt, buttons=None):
+#     """" Display text block with lines separated by \n and choice of buttons at bottom.
+#     :param box_title: main heading on box
+#     :type box_title: str
+#     :param title2: 2nd title above text
+#     :type title2: str
+#     :param txt: text block with lines separated by \n
+#     :type txt: str
+#     :param buttons: list of button text, defaults to ['OK', 'Exit']
+#     :type buttons: list of str
+#     :return: lower case value of selected button
+#     :rtype: str
+#     """
+#
+#     if buttons is None:
+#         buttons = ["OK", "Exit"]
+#
+#     col_factor = 3 # to scale windo equally
+#     row_factor = 25 # to scale windo equally
+#     max_cols = len(max(txt.split("\n"), key=len)) * col_factor
+#     cols = max_cols
+#     # v_scroll = False
+#     col_limit = 80 * col_factor
+#     col_min = 50 * col_factor
+#     if cols > col_limit:
+#         # v_scroll = True
+#         cols = col_limit
+#     elif cols < col_min:
+#         cols = col_min
+#
+#
+#     h_scroll = False
+#     row_limit = 80
+#     row_min = 10
+#     max_rows = len(txt.split("\n"))
+#     rows = max_rows
+#     if rows > row_limit:
+#         h_scroll = True
+#         rows = row_limit
+#     elif rows < row_min:
+#         rows = row_min
+#
+#     layout = [
+#         [sg.Text(title2,font=("Arial", 18))],
+#         [sg.Multiline(txt, autoscroll=False, horizontal_scroll = h_scroll, expand_x=True,
+#                       expand_y=True, enable_events=True )],
+#         [sg.Button(text) for text in buttons],
+#     ]
+#
+#     event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
+#                               use_custom_titlebar=True, size=(600,rows*row_factor), disable_close=True,
+#                               resizable=True, grab_anywhere	= True).read(close=True)
+#     # event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
+#     #                           use_custom_titlebar=True, size=(cols,rows), disable_close=True,
+#     #                           resizable=True, grab_anywhere	= True).read(close=True)
+#     if event is not None:
+#         event = event.lower()
+#     return event
+#
 
-    event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-                              use_custom_titlebar=True, size=(600,rows*row_factor), disable_close=True,
-                              resizable=True, grab_anywhere	= True).read(close=True)
-    # event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-    #                           use_custom_titlebar=True, size=(cols,rows), disable_close=True,
-    #                           resizable=True, grab_anywhere	= True).read(close=True)
-    if event is not None:
-        event = event.lower()
-    return event
-
-
-def get_dir_name(box_title, title2, initial_dir):
-    """ show an "Open" dialog box and return the selected directory. Replaced askdirectory with pyeasygui
-    :param title2:
-    :type title2:
-    """
-
-    layout = [
-        [sg.Text(title2,font=("Arial", 18))],
-        [
-         sg.Input(key="-IN-", expand_x=True),
-         sg.FolderBrowse(initial_folder=os.path.expanduser(initial_dir))
-         ],
-        [sg.Button("Choose")],
-    ]
-
-    # event, values = sg.Window(heading_in_box, layout, size=(600, 100)).read(close=True)
-    event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-                              size=(1000,150), use_custom_titlebar=True ).read(close=True)
-
-    dir_name = values['-IN-']
-    if dir_name == "":
-        exit_yes("No directory name chosen")
-
-    return dir_name
-
-
-def get_file_name(box_title, title2, initial_dir):
-    """ show an "Open" dialog box and return the selected file name. Replaced askopenfilename with pyeasygui
-    :param title2: heading of the box
-    :type title2: text next to input field
-    """
-    #"Select Sincere address export file 'all-parent-campaign-requests-yyyy-mm-dd.csv'"
-    layout = [
-        [sg.Text(title2,font=("Arial", 18))],
-        [
-         sg.Input(key="-IN-", expand_x=True),
-         sg.FileBrowse(initial_folder=os.path.expanduser(initial_dir))
-         ],
-        [sg.Button("Choose")],
-    ]
-
-    # event, values = sg.Window(heading_in_box, layout, size=(600, 100)).read(close=True)
-    event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-                              size=(1000, 150), use_custom_titlebar=True).read(close=True)
-    # sg.Window.close()
-
-    file_name = values['-IN-']
-    if file_name == "":
-        exit_yes("No file name chosen")
-
-    return file_name
-
+# def get_dir_name(box_title, title2, initial_dir):
+#     """ show an "Open" dialog box and return the selected directory. Replaced askdirectory with pyeasygui
+#     :param title2:
+#     :type title2:
+#     """
+#
+#     layout = [
+#         [sg.Text(title2,font=("Arial", 18))],
+#         [
+#          sg.Input(key="-IN-", expand_x=True),
+#          sg.FolderBrowse(initial_folder=os.path.expanduser(initial_dir))
+#          ],
+#         [sg.Button("Choose")],
+#     ]
+#
+#     # event, values = sg.Window(heading_in_box, layout, size=(600, 100)).read(close=True)
+#     event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
+#                               size=(1000,150), use_custom_titlebar=True ).read(close=True)
+#
+#     dir_name = values['-IN-']
+#     if dir_name == "":
+#         exit_yes("No directory name chosen")
+#
+#     return dir_name
+#
+#
+# def get_file_name(box_title, title2, initial_dir):
+#     """ show an "Open" dialog box and return the selected file name. Replaced askopenfilename with pyeasygui
+#     :param title2: heading of the box
+#     :type title2: text next to input field
+#     """
+#     #"Select Sincere address export file 'all-parent-campaign-requests-yyyy-mm-dd.csv'"
+#     layout = [
+#         [sg.Text(title2,font=("Arial", 18))],
+#         [
+#          sg.Input(key="-IN-", expand_x=True),
+#          sg.FileBrowse(initial_folder=os.path.expanduser(initial_dir))
+#          ],
+#         [sg.Button("Choose")],
+#     ]
+#
+#     # event, values = sg.Window(heading_in_box, layout, size=(600, 100)).read(close=True)
+#     event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
+#                               size=(1000, 150), use_custom_titlebar=True).read(close=True)
+#     # sg.Window.close()
+#
+#     file_name = values['-IN-']
+#     if file_name == "":
+#         exit_yes("No file name chosen")
+#
+#     return file_name
+#
 
 def read_sincere_request_file(input_file):
     """ read the downloaded Sincere csv of requests and create df with all necessary variables"""
@@ -622,13 +624,26 @@ def make_pivot_old(writer, df, report_var, index_vars, aggfunc, sheet_name, free
     ws.freeze_panes(freeze_row, freeze_col)
 
 
+def df_to_sheet(writer, df, sheet_name, freeze_cell=None):
+    """ write df info to excel writer and freeze if specified """
+    if sheet_name == '':
+        sheet_name = "No Team"
+    logger.debug(f"{sheet_name=}")
+    df.to_excel(writer, sheet_name=sheet_name, startrow=6)
+    ws = writer.sheets[sheet_name]
+    # ws.freeze_panes(freeze_row, freeze_col)
+    if freeze_cell is not None:
+        mycell = ws[freeze_cell]
+        ws.freeze_panes = mycell
+
+
 def make_pivot(writer, df, report_var, index_vars, aggfunc, sheet_name, freeze_cell):
     """ template for pivot tables in reports """
     df_pt = pd.pivot_table(df, columns=report_var, index=index_vars,
                            values=['addresses_count'], margins=True, dropna=True, aggfunc=aggfunc)
     df_pt = df_pt.sort_index(axis=1, ascending=False)
     if sheet_name == '':
-        sheet_name = "Blank Team"
+        sheet_name = "No Team"
     logger.debug(f"{sheet_name=}")
     df_pt.to_excel(writer, sheet_name=sheet_name, startrow=6)
     ws = writer.sheets[sheet_name]
@@ -713,8 +728,20 @@ def make_chart(writer, df, index_vars, sheet_name):
     # writer.save()
 
 
-def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir_admin, admin_rpt_filename):
-    """ create admin reports and chart.  Sincere data file just for report titles. """
+def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir_admin, admin_rpt_filename,
+                        factory_csv):
+    """ create admin reports and chart.  Sincere data file just for report titles.
+
+    Args:
+        factory_csv ():
+        sincere_df (): df containing df  address request info
+        sincere_data_file (): name of file used to create sincere_df, used for report title.  like
+        'all-parent-campaigns-requests-2024-02-26 test.csv'
+        report_by (): W or M for Weekly or Monthly
+        str_output_dir_admin (): str of directory where admin reports will be placed
+        admin_rpt_filename (): name of the xls file for admin report
+    """
+
     print("Org: Enterprise wide")  # TODO: use logger instead of prints
 
     report_by = report_by.upper()
@@ -725,10 +752,9 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
     else:
         exit_yes(f"Report_by not W or M: {report_by}")
 
-    output_dir_admin = os.path.expanduser(str_output_dir_admin)
+    output_dir_admin = Path(str_output_dir_admin).expanduser()
 
-    excel_output_file = os.path.join(os.path.expanduser(output_dir_admin),
-                        admin_rpt_filename)
+    excel_output_file = Path(output_dir_admin).expanduser() / admin_rpt_filename
 
     writer = pd.ExcelWriter(excel_output_file, engine="openpyxl")
 
@@ -736,41 +762,52 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
     logger.debug("calling make_chart")
     make_chart(writer, sincere_df, 'factory_name', 'Chart')
 
+    # Report on Masters and Campaigns using sum w subtotals
+    logger.debug("calling factory_and_campaign_subtotals")
+    factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv)
+    df_to_sheet(writer, factory_tots, 'Totals', freeze_cell="D8")
+
     # Run pivot on Master without county campaigns
     logger.debug("calling make_pivot")
-    # make_pivot(writer, sincere_df, [report_var], ['master_campaign'], np.sum, 'Masters', 'B10')
     make_pivot(writer, sincere_df, [report_var], ['master_campaign'], 'sum', 'Masters', 'B10')
 
     # Run standalone pivot on campaigns
     logger.debug("calling make_pivot")
-    # make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], np.sum, 'Campaigns', 'C10')
     make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
 
+
     logger.debug("calling make_pivot")
-    # make_pivot(writer, sincere_df, [report_var], ['org_name'], np.sum, 'Rooms', 'B10')
     make_pivot(writer, sincere_df, [report_var], ['org_name'], 'sum', 'Rooms', 'B10')
 
     wb = writer.book
 
     # size columns before titles added because they are very wide
     for sh in wb.worksheets:
-        autosizexls(sh)
+        autosize_xls_cols(sh)
 
     min_date2 = sincere_df['created_at'].min()
     max_date2 = sincere_df['created_at'].max()
     for sh in wb.worksheets:
         sh['A1'].value = "Across All ROV"
         sh['A1'].font = Font(b=True, size=20)
-        if sh.title not in ['Campaigns', 'Rooms', 'Masters']:
+        if sh.title not in ['Campaigns', 'Rooms', 'Masters', 'Totals']:
             sh['A2'].value = "Campaign State: " + sh.title
         sh['A2'].font = Font(b=True, size=16)
 
         sh['A3'].value = ("By Month" if report_by == "M" else "By Week")
         sh['A3'].font = Font(b=True, size=12)
 
-        sh['A4'].value = "Date range, inclusive: " + min_date2 + " to " + max_date2
+        if sh.title in ['Totals']:  # factory / campaign snapshot file
+            sh['A4'].value = f"Data as of: {factory_pull_date}"
+        else:
+            sh['A4'].value = "Date range, inclusive: " + min_date2 + " to " + max_date2
+
         sh['A4'].font = Font(size=12)
-        sh['A5'].value = "Source: " + sincere_data_file
+
+        if sh.title in ['Totals']:  # factory / campaign snapshot file
+            sh['A5'].value = "Source: " + str(factory_csv.name)
+        else:
+            sh['A5'].value = "Source: " + sincere_data_file
         sh['A5'].font = Font(size=12)
 
     # writer.save()
@@ -847,7 +884,7 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
             r = r + 1
 
         for sh in wb.worksheets:
-            autosizexls(sh)
+            autosize_xls_cols(sh)
             # wb.active = 0 # did not work - still first two sheets activated!
 
         min_date2 = sincere_df['created_at'].min()
@@ -878,8 +915,7 @@ def create_report_files():
     """ produce all the spreadsheet reports locally"""
 
     # report_by = pymsgbox.confirm('[W]eekly or [M]onthly report?', 'Date Format', ["W", "M", 'Cancel'])
-    report_by = bek_text_box("Date Format", "",
-                             "\n\n[W]eekly or [M]onthly report?", ["W", "M", 'Exit'])
+    report_by = text_box("\n\n[W]eekly or [M]onthly report?", "Date Format", "", ["W", "M", 'Exit'])
     report_by = report_by.upper()
     if report_by == 'M':
         report_var = "month"
@@ -892,6 +928,12 @@ def create_report_files():
     input_file = get_file_name("Pick a File",
                                "Select Sincere address export file 'all-parent-campaign-requests-yyyy-mm-dd'",
                                SINCERE_DOWNLOAD_DIR)
+
+    factory_csv = get_file_name("Pick File",
+                                f"Pick a parent-campaign file to summarize (eg "
+                                f"'parent-campaign-address-counts-2023-08-03.csv'."
+                                f"\n\nCreate via ROV > Reports > New Report > Parent Campaign Address Counts",
+                                SINCERE_DOWNLOAD_DIR)
 
     # Create dataframe of excel sheet data
     sincere_df = read_sincere_request_file(input_file)
@@ -908,7 +950,8 @@ def create_report_files():
 
     ### Create admin report
     admin_rpt_filename = f"ROVWide Sincere Summary {file_date}-{report_by}.xlsx"
-    create_admin_report(sincere_df, sincere_data_file_name, report_by, OUTPUT_DIR_ADMIN, admin_rpt_filename)
+    create_admin_report(sincere_df, sincere_data_file_name, report_by, OUTPUT_DIR_ADMIN, admin_rpt_filename,
+                        factory_csv)
 
     # Base of report file; input file name is used to create a sub dir under this
     output_dir = os.path.expanduser(OUTPUT_DIR_REPORTS)
@@ -931,12 +974,11 @@ def create_report_files():
     #                f"\n\n\nAdmin reports produced. In:"
     #                f"\n\n{OUTPUT_DIR_ADMIN}",
     #            "Done!")
-    bek_text_box("Done!", "",
-               f"Org reports produced. In:"
+    text_box(f"Org reports produced. In:"
                f"\n\n{OUTPUT_DIR_REPORTS}"
                f"\n\n\nAdmin reports produced. In:"
-               f"\n\n{OUTPUT_DIR_ADMIN}",
-               ["Ok"])
+               f"\n\n{OUTPUT_DIR_ADMIN}","Done!", "",
+             ["Ok"])
 
 
 def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id):
@@ -959,10 +1001,9 @@ def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id)
               f"path: {file_to_upload_w_path}")
         # pymsgbox.alert(f"**** CONVERTING XLS FILE TO GOOGLE SHEET: Uploaded file name:  {file_to_upload_w_path}",
         #            "CHECK PYTHON CONSOLE FOR ERROR")
-        bek_text_box("CHECK PYTHON CONSOLE FOR ERROR","",
-                     f"\n\n**** CONVERTING XLS FILE TO GOOGLE SHEET: Uploaded file name: "
-                     f" {file_to_upload_w_path}",
-                    ["Ok"])
+        text_box(f"\n\n**** CONVERTING XLS FILE TO GOOGLE SHEET: Uploaded file name: "
+                     f" {file_to_upload_w_path}","CHECK PYTHON CONSOLE FOR ERROR", "",
+                 ["Ok"])
 
     try:
         file = drive_service.files().create(body=file_metadata,
@@ -975,9 +1016,9 @@ def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id)
           f"{file_to_upload_w_path}, ID: {file.get('id')}")
         # pymsgbox.alert(f"**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}",
         #            "CHECK PYTHON CONSOLE FOR ERROR")
-        bek_text_box("CHECK PYTHON CONSOLE FOR ERROR","",
-                     f"\n\n**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}",
-                     ["Ok"])
+        text_box(f"\n\n**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}",
+                 "CHECK PYTHON CONSOLE FOR ERROR", "",
+                 ["Ok"])
 
     uploaded_file_id = file.get('id')
 
@@ -1028,10 +1069,10 @@ def permission_to_drive_file(drive_service, drive_file_id, email_flag, email, pe
             # pymsgbox.alert(
             #     f"*****  ERROR GIVING PERMISSION: Email: {email}, Uploaded file id: {drive_file_id}",
             #     "CHECK PYTHON CONSOLE FOR ERROR")
-            bek_text_box("\nCHECK PYTHON CONSOLE FOR ERROR","",
-                         f"*****  ERROR GIVING PERMISSION: Email: "
+            text_box(f"*****  ERROR GIVING PERMISSION: Email: "
                          f"{email}, Uploaded file id: {drive_file_id}",
-                         ["Ok"])
+                     "\nCHECK PYTHON CONSOLE FOR ERROR", "",
+                     ["Ok"])
 
     a=1
 
@@ -1206,7 +1247,7 @@ def upload_files(drive_service):
     """
 
     # choice = pymsgbox.confirm("Upload admin report?", "Upload Admin Reports?", ['Yes', 'No'])
-    choice = bek_text_box("Upload admin report?", "", "\n\nUpload Admin Reports?", ['Yes', 'No'])
+    choice = text_box("\n\nUpload Admin Reports?", "Upload admin report?", "",  ['Yes', 'No'])
     upload_admin = False
     if choice == "yes":
         upload_admin = True
@@ -1221,7 +1262,7 @@ def upload_files(drive_service):
 
 
     # choice = pymsgbox.confirm("Upload room reports?", "Upload Room Reports?", ['Yes', 'No'])
-    choice = bek_text_box("Upload room reports?", "", "\n\nUpload Room Reports?", ['Yes', 'No'])
+    choice = text_box("\n\nUpload Room Reports?", "Upload room reports?", "", ['Yes', 'No'])
     upload_room = False
     if choice == "yes":
         upload_room = True
@@ -1289,21 +1330,27 @@ def main_program():
     # Identify which VoterLetters files should be downloaded before starting
     if True:
         # change to pyeasygui from pymsgbox
-        choice = bek_text_box("REMINDER", "",
+
+        choice = text_box(
                       (f"\nDownload data from Sincere before running.\n\n"
                        f"1. Get addresses assigned in Sincere:\n\n"
                        f"   All Enterprise >\n"
                        f"   ROV >\n"
                        f"   Reports >\n"
                        f"   New Report >\n"
+                       f"   Parent Campaign Address Counts.\n\n\n"
+                       f"2. Get Master and County campaign information from Sincere:\n\n"
+                       f"   Reports >\n"
+                       f"   New Report >\n"
                        f"   All Parent Campaign Address Requests.\n\n"
                        f"   Dates 1/1/24 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
-                       f"2. Get Sincere users (to assign google read permissions):\n\n"
+                       f"3. Get Sincere users (to assign google read permissions):\n\n"
                        f"   Reports >\n"
                        f"   New Report >\n"
                        f"   All Users\n\n\n"),
-                     ["Ok", "Exit"]
-                    )
+                        "REMINDER", "",
+                       buttons=["Ok", "Exit"],
+                          )
         if choice == "exit":
             exit()
 
@@ -1320,13 +1367,14 @@ def main_program():
         #                f"   Export Users to CSV>\n\n\n"
         #                f"Get ready!")
 
-    choice = bek_text_box('Run, Upload or Exit?', "",
-                          (f"\n'Run' to create the admin report and room reports locally\n\n"
+    choice = text_box(
+                      (f"\n'Run' to create the admin report and room reports locally\n\n"
                            f"'Upload' to copy either the admin report, room reports, or both to Google sheets and send "
                            f"notifications to Organizers\n\n"
                            f"'Exit' to start over"
                            ),
-                          ["Run", 'Upload', 'Exit'])
+                      'Run, Upload or Exit?', "",
+                      buttons=["Run", 'Upload', 'Exit'])
     # choice = pymsgbox.confirm("Run Reports or upload files to Google Drive", 'Run, Upload or Exit?',
     #                           ["Run", 'Upload', 'Exit'])
     if choice == "exit":

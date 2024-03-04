@@ -33,7 +33,8 @@ def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=No
     sincere_data = sincere_data[(~sincere_data['Factory'].str.lower().str.contains("zzz"))]
 
     # limit to factories containing factory_must_have_string
-    sincere_data = sincere_data[(sincere_data['Name'].str.lower().str.contains(factory_must_have_string))]
+    if factory_must_have_string is not None:
+        sincere_data = sincere_data[(sincere_data['Name'].str.lower().str.contains(factory_must_have_string))]
 
     sincere_data['Remaining In Room'] = sincere_data['Assigned to Organizations'] - sincere_data['Assigned to Writers']
 
@@ -57,7 +58,10 @@ def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=No
                                   'Assigned to Organizations': 'Assigned to Rooms'})
 
     # one day prior to "as of date" in file name
-    date_pulled = datetime.strptime(str(factory_csv)[-14:-4], '%Y-%m-%d')+timedelta(days=-1)
+
+    # don't back up a day for pull_date because snapshot is of the day report is run (may contain partial day's requests
+    # date_pulled = datetime.strptime(str(factory_csv)[-14:-4], '%Y-%m-%d')+timedelta(days=-1)
+    date_pulled = datetime.strptime(str(factory_csv)[-14:-4], '%Y-%m-%d')
     date_pulled_str = date_pulled.strftime('%Y-%m-%d')
 
     return df_pt, date_pulled_str
