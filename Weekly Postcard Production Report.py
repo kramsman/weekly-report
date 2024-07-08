@@ -24,7 +24,7 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
 # then 'APi and Services' (upper left)>credentials.  +Create > Oauth > desktop
 # delete token.json / credentials.json.  Rename to credentials, copy in
 
-# TODO: close 'select user list' windo before running kicks off
+# TODO: close 'select user list' window before running kicks off
 # TODO: prompt for room report creation when Running?  Or does it not take that long, better to have all?
 # TODO: run another admin report- addresses in masters, avail, in rooms, with writers, avail
 # TODO: pymsgbox prompt before tk openfile/dir because titles not showing
@@ -38,6 +38,8 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
 # TODO: add excluded email list to skip giving permission
 # TODO: format all numbers with commas
 # TODO: remove pymsgbox references
+# TODO Implement loguru with log file, levels of logging
+# TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
 
 # from datetime import datetime
 import datetime as dt
@@ -99,6 +101,10 @@ else:
     ROOT_PATH = None
 # ROOT_PATH = str(ROOT_PATH)
 logger.debug(f"({ROOT_PATH=}")
+
+# string to filter factories.  Can not filter for 'not locked' because that would exclude some current year closed
+# campaigns
+FACTORY_FILTER_STRING = '-2024'
 
 # for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
@@ -261,7 +267,7 @@ def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=
         logger.debug(f"got flow: {flow.__dict__=}")
         # creds = flow.run_local_server(port=0)
         msg = ("Calling the 2nd part of flow, 'flow.run_local_server(port=0)'"
-                 "\n\n   - Use 'tech@centerforcommonground.org' google login."
+                 "\n\n   - Use 'TECH@CENTERFORCOMMONGROUND.ORG' google login."
                  "\n   - Must say process completed - close this window."
                  "\n   - If you get error 403, hit back in the browser and try again")
         logger.debug(msg)
@@ -762,10 +768,15 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
     logger.debug("calling make_chart")
     make_chart(writer, sincere_df, 'factory_name', 'Chart')
 
+    # Report on Masters only using sum w subtotals
+    # logger.debug("calling factory_and_campaign_subtotals")
+    # factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING)
+    # df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="D8")
+
     # Report on Masters and Campaigns using sum w subtotals
     logger.debug("calling factory_and_campaign_subtotals")
-    factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv)
-    df_to_sheet(writer, factory_tots, 'Totals', freeze_cell="D8")
+    factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING)
+    df_to_sheet(writer, factory_tots, 'Assigned_w_counties', freeze_cell="D8")
 
     # Run pivot on Master without county campaigns
     logger.debug("calling make_pivot")
@@ -926,22 +937,29 @@ def create_report_files():
         exit()
 
     input_file = get_file_name("Pick a File",
-                               "Select Sincere address export file 'all-parent-campaign-requests-yyyy-mm-dd'",
+                               "Select Sincere address export file 'all-parent-campaign-REQUESTS-yyyy-mm-dd'",
                                SINCERE_DOWNLOAD_DIR)
 
     factory_csv = get_file_name("Pick File",
                                 f"Pick a parent-campaign file to summarize (eg "
                                 f"'parent-campaign-address-counts-2023-08-03.csv'."
-                                f"\n\nCreate via ROV > Reports > New Report > Parent Campaign Address Counts",
+                                f"\n\nCreate via ROV > Reports > New Report > Parent Campaign Address COUNTS",
                                 SINCERE_DOWNLOAD_DIR)
 
     # Create dataframe of excel sheet data
     sincere_df = read_sincere_request_file(input_file)
     sincere_data_file_name = os.path.basename(input_file)
 
+    # only take factories from this year - many old and some new are locked
+    sincere_df = sincere_df.loc[sincere_df['factory_name']
+        .apply(lambda x: (FACTORY_FILTER_STRING in x.lower()))]
     # remove any unwanted requests - training and sample rooms
+    sincere_df = sincere_df.loc[sincere_df['factory_name']
+        .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'test' in x.lower()))]
+    # remove more unwanted requests - training and sample rooms
     sincere_df = sincere_df.loc[sincere_df['org_name']
-        .apply(lambda x: not ('training' in x.lower() or 'sample' in x.lower()))]
+        .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'training' in x.lower() or 'sample' in
+                         x.lower()))]
 
     file_date = Path(input_file).stem[-10:]
 
@@ -1013,7 +1031,7 @@ def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id)
     except:
         # if file upload doesn't work
         print(f"**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}, path: "
-          f"{file_to_upload_w_path}, ID: {file.get('id')}")
+          f"{file_to_upload_w_path}")
         # pymsgbox.alert(f"**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}",
         #            "CHECK PYTHON CONSOLE FOR ERROR")
         text_box(f"\n\n**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}",
@@ -1069,9 +1087,9 @@ def permission_to_drive_file(drive_service, drive_file_id, email_flag, email, pe
             # pymsgbox.alert(
             #     f"*****  ERROR GIVING PERMISSION: Email: {email}, Uploaded file id: {drive_file_id}",
             #     "CHECK PYTHON CONSOLE FOR ERROR")
-            text_box(f"*****  ERROR GIVING PERMISSION: Email: "
+            text_box(f"**  ERROR GIVING PERMISSION (likely blocked by recipient): Email: "
                          f"{email}, Uploaded file id: {drive_file_id}",
-                     "\nCHECK PYTHON CONSOLE FOR ERROR", "",
+                     "Click OK to Continue", "",
                      ["Ok"])
 
     a=1
@@ -1240,6 +1258,7 @@ def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
                 #     f"{email}")
                 # pymsgbox.confirm("Wait a bit and then try")
                 permission_to_drive_file(drive_service, uploaded_file_id, SEND_PERMISSION_EMAIL_FLAG, email, permission_msg)
+                a=1
 
 
 def upload_files(drive_service):
@@ -1338,16 +1357,17 @@ def main_program():
                        f"   ROV >\n"
                        f"   Reports >\n"
                        f"   New Report >\n"
-                       f"   Parent Campaign Address Counts.\n\n\n"
+                       f"   Parent Campaign Address COUNTS\n\n"
+                       f"   If 'Locked' is selected, make sure reports are not including erroneous campaigns.\n\n\n"
                        f"2. Get Master and County campaign information from Sincere:\n\n"
                        f"   Reports >\n"
                        f"   New Report >\n"
-                       f"   All Parent Campaign Address Requests.\n\n"
+                       f"   All Parent Campaign Address REQUESTS\n\n"
                        f"   Dates 1/1/24 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
                        f"3. Get Sincere users (to assign google read permissions):\n\n"
                        f"   Reports >\n"
                        f"   New Report >\n"
-                       f"   All Users\n\n\n"),
+                       f"   All USERS\n\n\n"),
                         "REMINDER", "",
                        buttons=["Ok", "Exit"],
                           )
@@ -1360,7 +1380,7 @@ def main_program():
         #                f"   ROV>\n"
         #                f"   Reports>\n"
         #                f"   New Report>\n"
-        #                f"   All Parent Campaign Address Requests.\n\n"
+        #                f"   All Parent Campaign Address REQUESTS.\n\n"
         #                f"   Dates 1/1/22 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
         #                f"2. Users (to assign google read permissions):\n"
         #                f"   Sincere Child Organizations>\n"

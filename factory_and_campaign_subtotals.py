@@ -34,7 +34,7 @@ def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=No
 
     # limit to factories containing factory_must_have_string
     if factory_must_have_string is not None:
-        sincere_data = sincere_data[(sincere_data['Name'].str.lower().str.contains(factory_must_have_string))]
+        sincere_data = sincere_data[(sincere_data['Factory'].str.lower().str.contains(factory_must_have_string))]
 
     sincere_data['Remaining In Room'] = sincere_data['Assigned to Organizations'] - sincere_data['Assigned to Writers']
 
