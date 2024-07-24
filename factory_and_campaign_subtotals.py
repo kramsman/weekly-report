@@ -1,8 +1,10 @@
-def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=None):
+def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=None,
+                                   break_fields="[('Factory', True), ('Name', False), ]"):
     """ Runs on parent-campaign report file from Sincere, prompted to input.
     Uses call to bek module 'pivot table with subtotals'.
 
     Args:
+        break_fields ():
         factory_csv (): parent-campaign file from Sincere to summarize (eg parent-campaign-address-counts-2023-08-03.csv
         factory_must_have_string (): to limit factories to report on, exclude prior years
 
@@ -47,7 +49,7 @@ def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=No
                      'Remaining In Room']
     # format of variable tuples to sum are: (variable name, whether to subtotal)
     # Order of variables is order/level of subtotaling
-    df_pt = sumby_w_totals(sincere_data, [('Factory', True), ('Name', False), ], sum_fields, 'sum')
+    df_pt = sumby_w_totals(sincere_data, eval(break_fields), sum_fields, 'sum')
 
     # calc % assigned to rooms
     df_pt['Percent Assigned to Rooms'] = round(100 * df_pt['Assigned to Organizations'] / df_pt['Total Addresses'], 0)

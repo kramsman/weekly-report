@@ -773,9 +773,15 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
     # factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING)
     # df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="D8")
 
+    # Report on Masters only using sum w subtotals
+    factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
+                                                                     break_fields="[('Factory', True), ]")
+    df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="D8")
+
     # Report on Masters and Campaigns using sum w subtotals
     logger.debug("calling factory_and_campaign_subtotals")
-    factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING)
+    factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
+                                                                     break_fields="[('Factory', True), ('Name', False), ]")
     df_to_sheet(writer, factory_tots, 'Assigned_w_counties', freeze_cell="D8")
 
     # Run pivot on Master without county campaigns
