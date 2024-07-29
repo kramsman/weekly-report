@@ -594,12 +594,10 @@ def read_sincere_request_file(input_file):
     request_df['data_week_ending'] = request_df.apply(lambda x: x['date2'] - dt.timedelta(days=x['daysoffset'] - 6), axis=1).dt.date
     request_df['month'] = pd.to_datetime(request_df['date2']).dt.to_period('M')
 
-    # Need two copies of team variable for pivots - one for row, one for cols # FIXME: I believe this was removed and two tables used
-    request_df['team2'] = request_df['team_name']
-
     # request_df.fillna(" No Team", inplace = True) # note space in front for sorting # change to only replace one col
     # ttt = request_df["team_name"].isnull() = " No Team"  # Fixme: THIS NEEDS FIXING
     request_df['team_name'] = np.where(request_df['team_name'].isnull() == True, " No Team", request_df['team_name'])
+    request_df['team_name'] = request_df['team_name'].str.replace(":","-").str.replace("\\","-").str.replace("/","-")
 
     request_df = request_df[~request_df['org_name'].isin(['ROV Test Silo', 'ROV Training Silo', 'ROV Sample Silo'])]  # select records for one Org
     teams = request_df['team_name'].unique()
@@ -854,6 +852,7 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
         excel_output_file = os.path.join(os.path.expanduser(str_output_dir_rooms),
                             org + " Sincere Summary " + file_date + "-" + report_by + ".xlsx")
 #    outputDirWFile = os.path.join(outputDir,Path(InputFile).stem + "-" + reportBy)
+
 
         teams = xlo['team_name'].unique()
         teams.sort()
