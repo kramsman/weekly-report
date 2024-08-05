@@ -41,6 +41,30 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
 # TODO Implement loguru with log file, levels of logging
 # TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
 
+
+ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                  f"Click to open.")
+# ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+#                   f"Click to open.")
+ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                        "\n\n** Note that weekly addresses to writers has jumped over the last 4 weeks "
+                        "from 96K to 120K to 210K to 267K!!  Writers are taking over 20K per day!"
+                        "\n** We are now out of FL addresses waiting on PDI.\n\n"
+                        "Click to open.")
+
+ORG_M_PERMISSION_MSG = ("A new MONTHLY VoterLetters summary report is available for your room. "
+                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                  "Click to open.")
+ORG_W_PERMISSION_MSG = (f"A new WEEKLY VoterLetters summary report is available for your room. "
+                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                  f"Click to open.")
+ORG_W_PERMISSION_MSG = ("A new MONTHLY VoterLetters summary report is available for your room. "
+                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                        "\n\nWeekly addresses to writers has jumped 2 1/2 times over the last 4 weeks - "
+                        "keep up the good work!!!"
+                        "\n\n We are currently out of FL addresses waiting on our data vendor PDI.\n\n"
+                        "Click to open.")
+
 # from datetime import datetime
 import datetime as dt
 import glob
@@ -120,17 +144,17 @@ SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
 
-CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-                   'Andrea@centerforcommonground.org',
-                   'dee@centerforcommonground.org',
-                   'comstockrov@gmail.com',
-                   'nancy@centerforcommonground.org',
-                   'bill.becky.rov@gmail.com',
-                   'carey@harmonicsystems.net',
-                   'gideon.asher1@gmail.com',
-                   ]
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+#                    'Andrea@centerforcommonground.org',
+#                    'dee@centerforcommonground.org',
+#                    'comstockrov@gmail.com',
+#                    'nancy@centerforcommonground.org',
+#                    'bill.becky.rov@gmail.com',
+#                    'carey@harmonicsystems.net',
+#                    'gideon.asher1@gmail.com',
+#                    ]
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
 # CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
@@ -1086,13 +1110,13 @@ def permission_to_drive_file(drive_service, drive_file_id, email_flag, email, pe
                                        emailMessage=permission_msg,
                                        body=payload).execute()
         except Exception as e:
-            print(f"**** ERROR GIVING PERMISSION: Email: {email}, Uploaded file id: {drive_file_id}")
+            print(f"Error giving permission, click ok to continue: Email: {email}, Uploaded file id: {drive_file_id}")
             print(sys.exc_info()[2])
             traceback.print_exc()
             # pymsgbox.alert(
             #     f"*****  ERROR GIVING PERMISSION: Email: {email}, Uploaded file id: {drive_file_id}",
             #     "CHECK PYTHON CONSOLE FOR ERROR")
-            text_box(f"**  ERROR GIVING PERMISSION (likely blocked by recipient): Email: "
+            text_box(f"Error giving permission, ok to ignore: (likely blocked by recipient): Email: "
                          f"{email}, Uploaded file id: {drive_file_id}",
                      "Click OK to Continue", "",
                      ["Ok"])
@@ -1119,11 +1143,13 @@ def upload_admin_report(drive_service, admin_report_to_upload):
     if not SEND_PERMISSION_EMAIL_FLAG:
         permission_msg = None
     elif file_name_wo_ext[-2:].lower() == '-m':
-        permission_msg = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                          f"Click to open.")
+        permission_msg = ROV_M_PERMISSION_MSG
+        # permission_msg = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+        #                   f"Click to open.")
     else:
-        permission_msg = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                          f"Click to open.")
+        permission_msg = ROV_W_PERMISSION_MSG
+        # permission_msg = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+        #                   f"Click to open.")
 
     for email in CORE_EMAIL_LIST:
         # print('  - Adding ROV-wide permission for email: ', email)
@@ -1250,13 +1276,15 @@ def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
                 if not SEND_PERMISSION_EMAIL_FLAG:
                     permission_msg = None
                 elif file_name_wo_ext[-2:].lower() == '-m':
-                    permission_msg = ("A new MONTHLY VoterLetters summary report is available for your room. "
-                                      "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                                      "Click to open.")
+                    permission_msg = ORG_M_PERMISSION_MSG
+                    # permission_msg = ("A new MONTHLY VoterLetters summary report is available for your room. "
+                    #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                    #                   "Click to open.")
                 else:
-                    permission_msg = (f"A new WEEKLY VoterLetters summary report is available for your room. "
-                                      f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                                      f"Click to open.")
+                    permission_msg = ORG_W_PERMISSION_MSG
+                    # permission_msg = (f"A new WEEKLY VoterLetters summary report is available for your room. "
+                    #                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                    #                   f"Click to open.")
 
                 # print('  - Adding ROV-wide permission for email: ', email)
                 # logging.getLogger(name='my_logger').info(f"{inspect.stack()[0][3]} - Adding room permission for email: "
