@@ -78,7 +78,10 @@ if __name__ == '__main__':
 
     setup_loguru("DEBUG", "DEBUG")
 
-    df_pt, date_pulled = factory_and_campaign_subtotals(factory_must_have_string='2024')
+    df_pt, date_pulled = factory_and_campaign_subtotals(factory_csv="/Users/Denise/Downloads/parent-campaign-address-counts-2024-08-11.csv",
+                                                        break_fields="[('Factory', True),]",
+                                                        factory_must_have_string='2024')
+    # break_fields = "[('Factory', True), ('Name', False), ]",
     # df_pt, date_pulled = factory_and_campaign_subtotals(factory_must_have_string='2024',
     #                         factory_csv=Path("~/Downloads/parent-campaign-address-counts-2024-03-03.csv").expanduser())
 
