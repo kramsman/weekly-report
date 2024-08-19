@@ -42,28 +42,22 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
 # TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
 
 
+ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                        "\n\n** Note that weekly addresses to writers had jumped over the last 4 weeks "
+                        "from 96K to 120K, 210K, and 267K but then fell to 187K and 167K last week.\n\n"
+                        "Click to open.")
+ORG_W_PERMISSION_MSG = (f"A new WEEKLY VoterLetters summary report is available for your room. "
+                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                  f"Click to open.")
+
 ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
                   f"Click to open.")
 # ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
 #                   f"Click to open.")
-ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                        "\n\n** Note that weekly addresses to writers has jumped over the last 4 weeks "
-                        "from 96K to 120K to 210K to 267K!!  Writers are taking over 20K per day!"
-                        "\n** We are now out of FL addresses waiting on PDI.\n\n"
-                        "Click to open.")
-
 ORG_M_PERMISSION_MSG = ("A new MONTHLY VoterLetters summary report is available for your room. "
                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                   "Click to open.")
-ORG_W_PERMISSION_MSG = (f"A new WEEKLY VoterLetters summary report is available for your room. "
-                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                  f"Click to open.")
-ORG_W_PERMISSION_MSG = ("A new MONTHLY VoterLetters summary report is available for your room. "
-                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                        "\n\nWeekly addresses to writers has jumped 2 1/2 times over the last 4 weeks - "
-                        "keep up the good work!!!"
-                        "\n\n We are currently out of FL addresses waiting on our data vendor PDI.\n\n"
-                        "Click to open.")
+
 
 # from datetime import datetime
 import datetime as dt
@@ -144,17 +138,17 @@ SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
 
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-#                    'Andrea@centerforcommonground.org',
-#                    'dee@centerforcommonground.org',
-#                    'comstockrov@gmail.com',
-#                    'nancy@centerforcommonground.org',
-#                    'bill.becky.rov@gmail.com',
-#                    'carey@harmonicsystems.net',
-#                    'gideon.asher1@gmail.com',
-#                    ]
+CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+                   'Andrea@centerforcommonground.org',
+                   'dee@centerforcommonground.org',
+                   'comstockrov@gmail.com',
+                   'nancy@centerforcommonground.org',
+                   'bill.becky.rov@gmail.com',
+                   'carey@harmonicsystems.net',
+                   'gideon.asher1@gmail.com',
+                   ]
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
-CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
 # CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
