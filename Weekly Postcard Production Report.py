@@ -793,17 +793,20 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
 
     # Report on Masters only using sum w subtotals
     factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
-                                                                     break_fields="[('Factory', True), ]")
+                                                                     break_fields="[('Election', True), ('Factory', "
+                                                                                  "False), ]")
 
-    factory_tots.sort_index(level=['factory_name'], key=df_sort_func, inplace=True)
-
-    df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="D8")
+    factory_tots.sort_index(level=['Election', 'Factory'], key=df_sort_func, ascending=False, inplace=True)
+    df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="C8")
 
     # Report on Masters and Campaigns using sum w subtotals
     logger.debug("calling factory_and_campaign_subtotals")
     factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
-                                                                     break_fields="[('Factory', True), ('Name', False), ]")
-    df_to_sheet(writer, factory_tots, 'Assigned_w_counties', freeze_cell="D8")
+                                                                     break_fields="[('Election', True), ('Factory', "
+                                                                                  "True), ('Name', False), ]")
+
+    factory_tots2 = factory_tots.sort_index(level=['Election', 'Factory', 'Name'], key=df_sort_func, ascending=False)
+    df_to_sheet(writer, factory_tots2, 'Assigned_w_counties', freeze_cell="D8")
 
     # Run pivot on Master without county campaigns
     logger.debug("calling make_pivot")
@@ -993,8 +996,8 @@ def create_report_files():
 
     # Create a dictionary of the earliest(min) date in a Factory to use for sorting
     factory_dict = sincere_df.groupby(by=['factory_name'], dropna=False)['created_at'].min().apply(
-        pd.to_datetime).to_dict()
-
+        pd.to_datetime).dt.strftime('%Y%m%d').to_dict()
+    factory_dict['_TOTAL'] = 999999
 
     file_date = Path(input_file).stem[-10:]
 
@@ -1009,7 +1012,7 @@ def create_report_files():
     level_dicts = {k.lower(): v for k, v in level_dicts.items()}
 
     # define multiindex_df_sorter function used to sort multiiindex output of groupby by dictionaries
-    def multiindex_df_sorter(level, default_level_dict=dict()):
+    def multiindex_df_sorter(level, default_level_dict={'_TOTAL': 999999}):
         """ function for sorting a dataframe's multiindex using a dictionary for each level.  if name of index
         (case-insensitive) field matches key in dict hardcoded as 'level_dicts' then dictionary is used,
         otherwise index level is left as is via use of an empty dictionary.  """
