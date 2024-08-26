@@ -3,6 +3,47 @@ Assign permissions to organizers which sends a Google notification.
 Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because using Git.
  """
 
+# WEEKLY messages
+ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
+                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                  f"Click to open.")
+# ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report is available for your room. "
+#                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+#                         "\n\nWeekly addresses to writers has jumped 2 1/2 times over the last 4 weeks - "
+#                         "keep up the good work!!!"
+#                         "\n\n We are currently out of FL addresses waiting on our data vendor to supply them.\n\n"
+#                         "Click to open.")
+ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                  f"Click to open.")
+# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+#                         "\n\n** Note that weekly addresses to writers has jumped over the last 4 weeks "
+#                         "from 96K to 120K to 210K to 267K!!  Writers are taking over 20K per day!"
+#                         "\n** We are now out of FL addresses waiting on PDI.\n\n"
+#                         "Click to open.")
+
+# MONTHLY messages
+ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                  f"Click to open.")
+
+ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
+                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                  "Click to open.")
+
+
+CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+                   'Andrea@centerforcommonground.org',
+                   'dee@centerforcommonground.org',
+                   'comstockrov@gmail.com',
+                   'nancy@centerforcommonground.org',
+                   'bill.becky.rov@gmail.com',
+                   'carey@harmonicsystems.net',
+                   'gideon.asher1@gmail.com',
+                   ]
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+# CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
+# CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
+# CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
 # V3.0 includes Factory_name field/master campaign
 #   4/26/22 if factory name exists, trim campaign to just state/county
@@ -40,30 +81,7 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
 # TODO: remove pymsgbox references
 # TODO Implement loguru with log file, levels of logging
 # TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
-
-
-ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                  f"Click to open.")
-# ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-#                   f"Click to open.")
-ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                        "\n\n** Note that weekly addresses to writers has jumped over the last 4 weeks "
-                        "from 96K to 120K to 210K to 267K!!  Writers are taking over 20K per day!"
-                        "\n** We are now out of FL addresses waiting on PDI.\n\n"
-                        "Click to open.")
-
-ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
-                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                  "Click to open.")
-ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
-                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                  f"Click to open.")
-ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report is available for your room. "
-                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                        "\n\nWeekly addresses to writers has jumped 2 1/2 times over the last 4 weeks - "
-                        "keep up the good work!!!"
-                        "\n\n We are currently out of FL addresses waiting on our data vendor to supply them.\n\n"
-                        "Click to open.")
+# TODO Print messages and msg-flag in pymsgbox before sending out
 
 # from datetime import datetime
 import datetime as dt
@@ -143,21 +161,6 @@ ADMIN_REPORT_FOLDER_ID = '1PU8hcYfE3Vlh5v8Cq60Gup_8lfaFff4b'  # 'VoterLetters Ad
 SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
-
-CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-                   'Andrea@centerforcommonground.org',
-                   'dee@centerforcommonground.org',
-                   'comstockrov@gmail.com',
-                   'nancy@centerforcommonground.org',
-                   'bill.becky.rov@gmail.com',
-                   'carey@harmonicsystems.net',
-                   'gideon.asher1@gmail.com',
-                   ]
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
-# CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
-# CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
-# CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
 
 noteLines = [
@@ -745,8 +748,8 @@ def make_chart(writer, df, index_vars, sheet_name):
     c1.add_data(data, from_rows=True, titles_from_data=True)
     c1.x_axis.number_format = 'mm/dd'
 
-    c1.height = 8.5 * 2  # default is 7.5
-    c1.width = 11 * 2  # default is 15
+    c1.height = 10 * 2  # default is 7.5
+    c1.width = 17 * 2  # default is 15
     c1.legend.position = 'b'  # 'tr', 'b', 't', 'l', 'r'
 
     c1.set_categories(cats)
@@ -780,6 +783,7 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
         report_var = "data_week_ending"
     else:
         exit_yes(f"Report_by not W or M: {report_by}")
+        exit_yes(f"Report_by not W or M: {report_by}")
 
     output_dir_admin = Path(str_output_dir_admin).expanduser()
 
@@ -793,10 +797,9 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
 
     # Report on Masters only using sum w subtotals
     factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
-                                                                     break_fields="[('Election', True), ('Factory', "
-                                                                                  "False), ]")
+                                 break_fields="[('Election', True), ('Factory', False), ]")
 
-    factory_tots.sort_index(level=['Election', 'Factory'], key=df_sort_func, ascending=False, inplace=True)
+    factory_tots.sort_index(level=['Election', 'Factory'], key=df_sort_func, ascending=True, inplace=True)
     df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="C8")
 
     # Report on Masters and Campaigns using sum w subtotals
@@ -805,7 +808,7 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
                                                                      break_fields="[('Election', True), ('Factory', "
                                                                                   "True), ('Name', False), ]")
 
-    factory_tots2 = factory_tots.sort_index(level=['Election', 'Factory', 'Name'], key=df_sort_func, ascending=False)
+    factory_tots2 = factory_tots.sort_index(level=['Election', 'Factory', 'Name'], key=df_sort_func, ascending=True)
     df_to_sheet(writer, factory_tots2, 'Assigned_w_counties', freeze_cell="D8")
 
     # Run pivot on Master without county campaigns
@@ -999,6 +1002,11 @@ def create_report_files():
         pd.to_datetime).dt.strftime('%Y%m%d').to_dict()
     factory_dict['_TOTAL'] = 999999
 
+    election_dict = {
+    "General": 1,
+    "Primary": 2,
+    }
+
     file_date = Path(input_file).stem[-10:]
 
     master_campaigns = sincere_df['master_campaign'].unique()
@@ -1008,11 +1016,13 @@ def create_report_files():
     ## working version to play can be found in sort df using dict.py
     level_dicts = dict()  # name of 'level_dicts' is hardcoded in sort function
     # Key value in level_dicts is matched to level name in index (case-insensitive)
-    level_dicts['Factory'] = factory_dict
+    # level_dicts['Factory'] = factory_dict
+    level_dicts['Election'] = election_dict
     level_dicts = {k.lower(): v for k, v in level_dicts.items()}
 
     # define multiindex_df_sorter function used to sort multiiindex output of groupby by dictionaries
-    def multiindex_df_sorter(level, default_level_dict={'_TOTAL': 999999}):
+    def multiindex_df_sorter(level, default_level_dict={}):
+    # def multiindex_df_sorter(level, default_level_dict={'_TOTAL': 999999}):
         """ function for sorting a dataframe's multiindex using a dictionary for each level.  if name of index
         (case-insensitive) field matches key in dict hardcoded as 'level_dicts' then dictionary is used,
         otherwise index level is left as is via use of an empty dictionary.  """
