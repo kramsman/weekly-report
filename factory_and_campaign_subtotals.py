@@ -38,6 +38,8 @@ def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=No
     if factory_must_have_string is not None:
         sincere_data = sincere_data[(sincere_data['Factory'].str.lower().str.contains(factory_must_have_string))]
 
+    sincere_data['Election'] = sincere_data['Factory'].apply(lambda fact: ('General' if 'general' in fact.lower() else 'Primary'))
+
     sincere_data['Remaining In Room'] = sincere_data['Assigned to Organizations'] - sincere_data['Assigned to Writers']
 
     # collapse parent campaigns to one line for locked Factories
@@ -78,7 +80,10 @@ if __name__ == '__main__':
 
     setup_loguru("DEBUG", "DEBUG")
 
-    df_pt, date_pulled = factory_and_campaign_subtotals(factory_must_have_string='2024')
+    df_pt, date_pulled = factory_and_campaign_subtotals(factory_csv="/Users/Denise/Downloads/parent-campaign-address-counts-2024-08-11.csv",
+                                                        break_fields="[('Factory', True), ('Name', False),]",
+                                                        factory_must_have_string='2024')
+    # break_fields = "[('Factory', True), ('Name', False), ]",
     # df_pt, date_pulled = factory_and_campaign_subtotals(factory_must_have_string='2024',
     #                         factory_csv=Path("~/Downloads/parent-campaign-address-counts-2024-03-03.csv").expanduser())
 

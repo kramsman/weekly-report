@@ -45,14 +45,18 @@ def set_election_type(name):
         election_type = 'P21rimary'
     return election_type
 
-df['Election'] = df['Factory'].apply(lambda fact: set_election_type(fact))
+# Set Election field using above function (in case there's a third option)
+# df['Election'] = df['Factory'].apply(lambda fact: set_election_type(fact))
+#
+# Set Election field to one of two values: General if 'general' found in name else Primary
+df['Election'] = df['Factory'].apply(lambda fact: ('General' if 'general' in fact.lower() else 'Primary'))
 
 df.rename(columns={'Total Addresses': 'Total',}, inplace=True)
 
 # summed = df.groupby(by=['Election', 'Factory', 'Name'], dropna=False).sum()
-summed = df[['Election', 'Total']].groupby(by=['Election'], dropna=False).sum()
+# summed = df[['Election', 'Total']].groupby(by=['Election'], dropna=False).sum()
 # summed = df.groupby(by=['Factory', 'Election', 'Name'], dropna=False).sum()
-# summed = df.groupby(by=['Factory',], dropna=False).sum()
+summed = df[['Factory', 'Total']].groupby(by=['Factory',], dropna=False).sum()
 
 if False:
     sincere_data_file_name = factory_csv.stem
@@ -75,7 +79,7 @@ level_dicts = dict()
 # Key value in level_dicts is matched to level name in index (case-insensitive)
 level_dicts['Factory'] = Factory_dict
 # level_dicts['Election'] = lambda s: s[2:3]
-level_dicts['Election'] = lambda s: s.lower()
+# level_dicts['Election'] = lambda s: s.lower()
 # level_dicts['Election'] = (dict())
 # level_dicts['name'] = Name
 level_dicts = {k.lower(): v for k, v in level_dicts.items()}
@@ -105,9 +109,25 @@ def multiindex_df_sorter(level, default_level_dict=dict(), **kwargs):
                                                                                                          dict) else level_dict)
     return mapped_index
 
+def multiindex_df_sorter2(level, default_level_dict=dict(), **kwargs):
+    """ function for sorting a dataframe's multiindex using a dictionary for each level.  if name of index
+    (case-insensitive) field matches key in dict hardcoded as 'level_dicts' then dictionary is used,
+    otherwise index level is left as is via use of an empty dictionary.  """
+    level_dict = level_dicts.get(level.name.lower(), default_level_dict)
+
+    print(f"'isinstance(level_dict, dict)' for {level.name}= {isinstance(level_dict, dict)}")
+    print(f"'level_dict' for {level.name}= {level_dict}")
+    print()
+
+    # ret = level.map( lambda s: d.get(s, np.NaN))
+    # mapped_index = level.map(lambda index_item: level_dict.get(index_item, index_item))
+    mapped_index = level.map(lambda index_item: level_dict.get(index_item, index_item))
+
+    return mapped_index
+
 # a_sorted_df = summed.sort_index(level=['Factory', 'Election', 'Name'], key=multiindex_df_sorter)
 # a_sorted_df = summed.sort_index(level=['Election', 'Factory', 'Name'], key=multiindex_df_sorter)
-a_sorted_df = summed.sort_index(level=['Election'], key=multiindex_df_sorter)
+a_sorted_df = summed.sort_index(level=['Factory'], key=multiindex_df_sorter2)
 print("\nsorted df:")
 pd.set_option('display.max_rows', None)
 print(a_sorted_df)

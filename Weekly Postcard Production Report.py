@@ -3,6 +3,47 @@ Assign permissions to organizers which sends a Google notification.
 Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because using Git.
  """
 
+# WEEKLY messages
+ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
+                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                  f"Click to open.")
+# ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report is available for your room. "
+#                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+#                         "\n\nWeekly addresses to writers has jumped 2 1/2 times over the last 4 weeks - "
+#                         "keep up the good work!!!"
+#                         "\n\n We are currently out of FL addresses waiting on our data vendor to supply them.\n\n"
+#                         "Click to open.")
+ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                  f"Click to open.")
+# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+#                         "\n\n** Note that weekly addresses to writers has jumped over the last 4 weeks "
+#                         "from 96K to 120K to 210K to 267K!!  Writers are taking over 20K per day!"
+#                         "\n** We are now out of FL addresses waiting on PDI.\n\n"
+#                         "Click to open.")
+
+# MONTHLY messages
+ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                  f"Click to open.")
+
+ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
+                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                  "Click to open.")
+
+
+CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+                   'Andrea@centerforcommonground.org',
+                   'dee@centerforcommonground.org',
+                   'comstockrov@gmail.com',
+                   'nancy@centerforcommonground.org',
+                   'bill.becky.rov@gmail.com',
+                   'carey@harmonicsystems.net',
+                   'gideon.asher1@gmail.com',
+                   ]
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+# CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
+# CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
+# CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
 # V3.0 includes Factory_name field/master campaign
 #   4/26/22 if factory name exists, trim campaign to just state/county
@@ -40,23 +81,7 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
 # TODO: remove pymsgbox references
 # TODO Implement loguru with log file, levels of logging
 # TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
-
-
-ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                        "\n\n** Note that weekly addresses to writers had jumped over the last 4 weeks "
-                        "from 96K to 120K, 210K, and 267K but then fell to 187K and 167K last week.\n\n"
-                        "Click to open.")
-ORG_W_PERMISSION_MSG = (f"A new WEEKLY VoterLetters summary report is available for your room. "
-                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                  f"Click to open.")
-
-ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                  f"Click to open.")
-# ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-#                   f"Click to open.")
-ORG_M_PERMISSION_MSG = ("A new MONTHLY VoterLetters summary report is available for your room. "
-                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                  "Click to open.")
+# TODO Print messages and msg-flag in pymsgbox before sending out
 
 
 # from datetime import datetime
@@ -137,21 +162,6 @@ ADMIN_REPORT_FOLDER_ID = '1PU8hcYfE3Vlh5v8Cq60Gup_8lfaFff4b'  # 'VoterLetters Ad
 SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
-
-CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-                   'Andrea@centerforcommonground.org',
-                   'dee@centerforcommonground.org',
-                   'comstockrov@gmail.com',
-                   'nancy@centerforcommonground.org',
-                   'bill.becky.rov@gmail.com',
-                   'carey@harmonicsystems.net',
-                   'gideon.asher1@gmail.com',
-                   ]
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
-# CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
-# CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
-# CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
 
 noteLines = [
@@ -739,8 +749,8 @@ def make_chart(writer, df, index_vars, sheet_name):
     c1.add_data(data, from_rows=True, titles_from_data=True)
     c1.x_axis.number_format = 'mm/dd'
 
-    c1.height = 8.5 * 2  # default is 7.5
-    c1.width = 11 * 2  # default is 15
+    c1.height = 10 * 2  # default is 7.5
+    c1.width = 17 * 2  # default is 15
     c1.legend.position = 'b'  # 'tr', 'b', 't', 'l', 'r'
 
     c1.set_categories(cats)
@@ -750,11 +760,12 @@ def make_chart(writer, df, index_vars, sheet_name):
     # writer.save()
 
 
-def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir_admin, admin_rpt_filename,
-                        factory_csv):
+def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir_admin, admin_rpt_filename, factory_csv,
+                        df_sort_func):
     """ create admin reports and chart.  Sincere data file just for report titles.
 
     Args:
+        df_sort_func ():
         factory_csv ():
         sincere_df (): df containing df  address request info
         sincere_data_file (): name of file used to create sincere_df, used for report title.  like
@@ -785,20 +796,20 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
     make_chart(writer, sincere_df, 'factory_name', 'Chart')
 
     # Report on Masters only using sum w subtotals
-    # logger.debug("calling factory_and_campaign_subtotals")
-    # factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING)
-    # df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="D8")
-
-    # Report on Masters only using sum w subtotals
     factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
-                                                                     break_fields="[('Factory', True), ]")
-    df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="D8")
+                                 break_fields="[('Election', True), ('Factory', False), ]")
+
+    factory_tots.sort_index(level=['Election', 'Factory'], key=df_sort_func, ascending=True, inplace=True)
+    df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="C8")
 
     # Report on Masters and Campaigns using sum w subtotals
     logger.debug("calling factory_and_campaign_subtotals")
     factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
-                                                                     break_fields="[('Factory', True), ('Name', False), ]")
-    df_to_sheet(writer, factory_tots, 'Assigned_w_counties', freeze_cell="D8")
+                                                                     break_fields="[('Election', True), ('Factory', "
+                                                                                  "True), ('Name', False), ]")
+
+    factory_tots2 = factory_tots.sort_index(level=['Election', 'Factory', 'Name'], key=df_sort_func, ascending=True)
+    df_to_sheet(writer, factory_tots2, 'Assigned_w_counties', freeze_cell="D8")
 
     # Run pivot on Master without county campaigns
     logger.debug("calling make_pivot")
@@ -948,7 +959,6 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
 def create_report_files():
     """ produce all the spreadsheet reports locally"""
 
-    # report_by = pymsgbox.confirm('[W]eekly or [M]onthly report?', 'Date Format', ["W", "M", 'Cancel'])
     report_by = text_box("\n\n[W]eekly or [M]onthly report?", "Date Format", "", ["W", "M", 'Exit'])
     report_by = report_by.upper()
     if report_by == 'M':
@@ -956,7 +966,6 @@ def create_report_files():
     elif report_by == 'W':
         report_var = "data_week_ending"
     else:
-        # exit_yes(f"Chose 'Exit' rather than 'weekly' or 'monthly'.")
         exit()
 
     input_file = get_file_name("Pick a File",
@@ -984,15 +993,50 @@ def create_report_files():
         .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'training' in x.lower() or 'sample' in
                          x.lower()))]
 
+    # Set Election field to one of two values: General if 'general' found in name else Primary
+    sincere_df['election'] = sincere_df['factory_name'].apply(lambda fact: ('General' if 'general' in fact.lower()
+                                                                            else 'Primary'))
+
+    # Create a dictionary of the earliest(min) date in a Factory to use for sorting
+    factory_dict = sincere_df.groupby(by=['factory_name'], dropna=False)['created_at'].min().apply(
+        pd.to_datetime).dt.strftime('%Y%m%d').to_dict()
+    factory_dict['_TOTAL'] = 999999
+
+    election_dict = {
+    "General": 1,
+    "Primary": 2,
+    }
+
     file_date = Path(input_file).stem[-10:]
 
     master_campaigns = sincere_df['master_campaign'].unique()
     master_campaigns.sort()
 
+    ## add dicts to 'level_dicts'; dict will be used for sort values for and dict name matching level name in multiindex
+    ## working version to play can be found in sort df using dict.py
+    level_dicts = dict()  # name of 'level_dicts' is hardcoded in sort function
+    # Key value in level_dicts is matched to level name in index (case-insensitive)
+    # level_dicts['Factory'] = factory_dict
+    level_dicts['Election'] = election_dict
+    level_dicts = {k.lower(): v for k, v in level_dicts.items()}
+
+    # define multiindex_df_sorter function used to sort multiiindex output of groupby by dictionaries
+    def multiindex_df_sorter(level, default_level_dict={}):
+    # def multiindex_df_sorter(level, default_level_dict={'_TOTAL': 999999}):
+        """ function for sorting a dataframe's multiindex using a dictionary for each level.  if name of index
+        (case-insensitive) field matches key in dict hardcoded as 'level_dicts' then dictionary is used,
+        otherwise index level is left as is via use of an empty dictionary.  """
+        level_dict = level_dicts.get(level.name.lower(), default_level_dict)
+        mapped_index = level.map(lambda index_item: level_dict.get(index_item, index_item))
+        return mapped_index
+
     ### Create admin report
     admin_rpt_filename = f"ROVWide Sincere Summary {file_date}-{report_by}.xlsx"
+    # create_admin_report(sincere_df, sincere_data_file_name, report_by, OUTPUT_DIR_ADMIN, admin_rpt_filename,
+    #                     factory_csv)
     create_admin_report(sincere_df, sincere_data_file_name, report_by, OUTPUT_DIR_ADMIN, admin_rpt_filename,
-                        factory_csv)
+                        factory_csv, multiindex_df_sorter)
+
 
     # Base of report file; input file name is used to create a sub dir under this
     output_dir = os.path.expanduser(OUTPUT_DIR_REPORTS)
@@ -1010,11 +1054,6 @@ def create_report_files():
     create_room_reports(sincere_df, sincere_data_file_name, file_date, report_by, output_dir_w_file)
 
     print("\nDone with all orgs.")
-    # pymsgbox.alert(f"Org reports produced. In:"
-    #                f"\n\n{output_dir}"
-    #                f"\n\n\nAdmin reports produced. In:"
-    #                f"\n\n{OUTPUT_DIR_ADMIN}",
-    #            "Done!")
     text_box(f"Org reports produced. In:"
                f"\n\n{OUTPUT_DIR_REPORTS}"
                f"\n\n\nAdmin reports produced. In:"
@@ -1375,8 +1414,6 @@ def main_program():
 
     # Identify which VoterLetters files should be downloaded before starting
     if True:
-        # change to pyeasygui from pymsgbox
-
         choice = text_box(
                       (f"\nDownload data from Sincere before running.\n\n"
                        f"1. Get addresses assigned in Sincere:\n\n"
@@ -1401,19 +1438,6 @@ def main_program():
         if choice == "exit":
             exit()
 
-        # pymsgbox.alert(f"Download data from Sincere before running.\n\n"
-        #                f"1. Addresses assigned in Sincere:\n"
-        #                f"   All Enterprise>\n"
-        #                f"   ROV>\n"
-        #                f"   Reports>\n"
-        #                f"   New Report>\n"
-        #                f"   All Parent Campaign Address REQUESTS.\n\n"
-        #                f"   Dates 1/1/22 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
-        #                f"2. Users (to assign google read permissions):\n"
-        #                f"   Sincere Child Organizations>\n"
-        #                f"   Export Users to CSV>\n\n\n"
-        #                f"Get ready!")
-
     choice = text_box(
                       (f"\n'Run' to create the admin report and room reports locally\n\n"
                            f"'Upload' to copy either the admin report, room reports, or both to Google sheets and send "
@@ -1422,8 +1446,6 @@ def main_program():
                            ),
                       'Run, Upload or Exit?', "",
                       buttons=["Run", 'Upload', 'Exit'])
-    # choice = pymsgbox.confirm("Run Reports or upload files to Google Drive", 'Run, Upload or Exit?',
-    #                           ["Run", 'Upload', 'Exit'])
     if choice == "exit":
         exit()
 
