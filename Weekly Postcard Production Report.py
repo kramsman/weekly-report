@@ -4,9 +4,11 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
  """
 
 # WEEKLY messages
-ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
-                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                  f"Click to open.")
+# ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
+#                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+#                   f"Click to open.")
+ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report is available for your room. "
+                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser.")
 # ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report is available for your room. "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                         "\n\nWeekly addresses to writers has jumped 2 1/2 times over the last 4 weeks - "
@@ -15,13 +17,16 @@ ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for y
 #                         "Click to open.")
 ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
                   f"Click to open.")
-# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last weekly for this campaign cycle.")
+# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last weekly for this campaign cycle. "
 #                         "\n\n** Note that weekly addresses to writers has jumped over the last 4 weeks "
 #                         "from 96K to 120K to 210K to 267K!!  Writers are taking over 20K per day!"
 #                         "\n** We are now out of FL addresses waiting on PDI.\n\n"
 #                         "Click to open.")
 
 # MONTHLY messages
+# ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
+#                   f"Click to open.")
 ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
                   f"Click to open.")
 
@@ -31,6 +36,7 @@ ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for y
 
 
 CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+                   'josi@centerforcommonground.org',
                    'Andrea@centerforcommonground.org',
                    'dee@centerforcommonground.org',
                    'comstockrov@gmail.com',
@@ -39,27 +45,12 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
                    'carey@harmonicsystems.net',
                    'gideon.asher1@gmail.com',
                    ]
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
 # CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
-# V3.0 includes Factory_name field/master campaign
-#   4/26/22 if factory name exists, trim campaign to just state/county
-# V3.2 6/16/22 skips over 3.1 which has Meika's requested reports and instead includes sending permission emails to the core groups
-#  Also moves ROVwide report selection to the top
-# V3.3 6-18-22 Go back to V3.1 and add in Meika's report: campaign by team/writer without date
-# V3.4 Added "By Master" report to ROV overview
-# V3.5 Fix error uploading file: trap error and report
-#   convert files being uploaded from list to dataframe to make sorting and formatting easier
-# V4.0 convert to subroutines
-# V4.1 convert google API calls to routines
-#   added chart
-# V4.2 split admin reports and room to functions
-# V4.3 replace pymsgbox with pysimplegui - include titles (which were lost in python v9+) and scrolling on boxes
-#   Use upload prompts to only prompt for admin file and userfile & directory
-#   Fixed assigning permissions to alternate gmails (with '+') by removing portion after +
 
 # Google cloud console for authorizations: https://console.cloud.google.com/home/dashboard?project=voterletters-reports,
 # then 'APi and Services' (upper left)>credentials.  +Create > Oauth > desktop
@@ -67,9 +58,7 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
 
 # TODO: close 'select user list' window before running kicks off
 # TODO: prompt for room report creation when Running?  Or does it not take that long, better to have all?
-# TODO: run another admin report- addresses in masters, avail, in rooms, with writers, avail
 # TODO: pymsgbox prompt before tk openfile/dir because titles not showing
-# TODO: include an "extra message" at the top of program that is appended to msg in permission email
 # TODO speed up the room report upload
 # TODO: possible - add chart to all org reports (like admin)
 # TODO: Move off my personal google account
@@ -81,10 +70,9 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
 # TODO: remove pymsgbox references
 # TODO Implement loguru with log file, levels of logging
 # TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
-# TODO Print messages and msg-flag in pymsgbox before sending out
+# TODO: writer errors assigning permissions to a file rather than pymsgboxes during run
 
 
-# from datetime import datetime
 import datetime as dt
 import glob
 import inspect
@@ -93,19 +81,12 @@ import logging
 import os
 from loguru import logger
 from pathlib import Path
-# from pathlib import *
-# from tkinter import *
 from tkinter import Tk  # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askdirectory
 from tkinter.filedialog import askopenfilename
 import PySimpleGUI as sg
 import sys
 
-# from openpyxl import Workbook
-# from openpyxl import load_workbook
-# from openpyxl.utils import get_column_letter
-# from openpyxl.utils import column_index_from_string
-# from random import random
 import numpy as np
 import openpyxl
 import pandas as pd
@@ -113,8 +94,6 @@ import pandas as pd
 import pymsgbox
 # from apiclient.http import MediaFileUpload  # needed even if Pycharm says not
 from googleapiclient.http import MediaFileUpload
-# from tkinter import messagebox
-# import ast
 # import google.auth.transport.requests
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -147,7 +126,7 @@ logger.debug(f"({ROOT_PATH=}")
 
 # string to filter factories.  Can not filter for 'not locked' because that would exclude some current year closed
 # campaigns
-FACTORY_FILTER_STRING = '-2024'
+FACTORY_FILTER_STRING = '-2025'
 
 # for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
@@ -199,77 +178,6 @@ noteLines = [
 ]
 
 
-# def autosize_xls_cols(ws):
-#     """ size all columns in worksheet to widest """
-#     # from https://stackoverflow.com/questions/13197574/openpyxl-adjust-column-width-size
-#     dims = {}
-#     for row in ws.rows:
-#         for cell in row:
-#             if cell.value:
-#                 # dims[cell.column] = max((dims.get(cell.column, 0), len(str(cell.value))))
-#                 if cell.data_type == 'd':
-#                     date_width = 10
-#                 else:
-#                     date_width = len(str(cell.value))
-#                 dims[cell.column_letter] = max((dims.get(cell.column_letter, 0), date_width))
-#
-#     for col, value in dims.items():
-#         ws.column_dimensions[col].width = value + 1
-
-
-# def get_creds_new():
-#     """ get credentials needed to set up API service.  Was inline code; this cleaned things up."""
-#     creds = None
-#     # The file token.json stores the user's access and refresh tokens, and is
-#     # created automatically when the authorization flow completes for the first
-#     # time.
-#     if not os.path.exists('token.json'):
-#         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-#         flow = InstalledAppFlow.from_client_secrets_file(
-#             'credentials.json', SCOPES)
-#         creds = flow.run_local_server(port=0)
-
-#     # If there are no (valid) credentials available, let the user log in.
-#     if not creds or not creds.valid:
-#         if creds and creds.expired and creds.refresh_token:
-#             os.remove('token.json')
-#             creds.refresh(Request())
-#         # else:
-#             flow = InstalledAppFlow.from_client_secrets_file(
-#                 'credentials.json', SCOPES)
-#             creds = flow.run_local_server(port=0)
-
-#         # Save the credentials for the next run
-#         with open('token.json', 'w') as token:
-#             token.write(creds.to_json())
-#     return creds
-
-
-# def get_creds(scopes):
-    # """ get credentials needed to set up API service.  Was inline code; this cleaned things up."""
-    # creds = None
-    # # TODO this needs to be reworked if creds expired then delete token.json and force Google verification
-    # # The file token.json stores the user's access and refresh tokens, and is
-    # # created automatically when the authorization flow completes for the first
-    # # time.
-    # if os.path.exists('token.json'):
-    #     creds = Credentials.from_authorized_user_file('token.json', scopes)
-    # # If there are no (valid) credentials available, let the user log in.
-    # if not creds or not creds.valid:
-    #     if creds and creds.expired and creds.refresh_token:
-    #         # os.remove('token.json')  # BEK 3/6/23 tried to fix by adding this but needs more
-    #         creds.refresh(Request())
-    #     else:
-    #         flow = InstalledAppFlow.from_client_secrets_file(
-    #             'credentials.json', SCOPES)
-    #         creds = flow.run_local_server(port=0)
-
-    #     # Save the credentials for the next run
-    #     with open('token.json', 'w') as token:
-    #         token.write(creds.to_json())
-    # return creds
-    
-
 def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=None, always_create=False,
               write_token=True):
     """ Gets credentials used in setting up google API services.  From webhook 1/6/24.
@@ -296,7 +204,7 @@ def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=
         # creds = flow.run_local_server(port=0)
         msg = ("Calling the 2nd part of flow, 'flow.run_local_server(port=0)'"
                  "\n\n   - Use 'TECH@CENTERFORCOMMONGROUND.ORG' google login."
-                 "\n   - Must say process completed - close this window."
+                 "\n\n   - Must say process completed - close this window."
                  "\n   - If you get error 403, hit back in the browser and try again")
         logger.debug(msg)
         pymsgbox.alert(msg,"Verify Google Account")
@@ -364,6 +272,9 @@ def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=
                                "Google Credential Issue")
                 logger.debug("refresh failed - going to run bek_cred_flow")
                 creds = bek_cred_flow()
+                pymsgbox.alert(f"Creds(request)) created.\nRerun program and you should not be prompted for login.",
+                               "Google Credential Created")
+                exit()  # TODO: why does this error with SIGDEF?  It used to wok.  Explore.
         else:
             creds = bek_cred_flow()
             
@@ -434,17 +345,6 @@ def check_df_headers(df, vals):
                  )
 
 
-# def bad_path_create(path, msg=None):
-#     """ checks for directory existence and creates if not found"""
-#     if msg is None:
-#         msg = ("Directory:\n\n" + path + "\n\ndoes not exist.  Creating." +
-#                "\n\nCalled from " + calling_func(level=2))
-#     if not os.path.isdir(path):
-#         # pymsgbox.alert(msg, "Adding Directory via bad_path_create")
-#         text_box("Alert", "", "\n\n" + msg, ["OK"])
-#         os.makedirs(path)
-
-
 def calling_func(level=0):
     """ returns the various levels of calling function.  0 is current, 1 is caller of current, etc """
     try:
@@ -453,150 +353,6 @@ def calling_func(level=0):
         func = f"** error ** inspect level too deep: {str(level)} called from {inspect.stack()[level][3]}"
     return func
 
-
-# def exit_yes_no(msg, title=None, display_exiting=False):
-#     """ makes this choice to continue one line"""
-#     if not title:
-#         title = "Exit?"
-#     # choice = pymsgbox.confirm(msg, title, ['Yes', 'No'])
-#     choice = text_box(title, "", "\n\n" + msg, ['Yes', 'No'])
-#
-#     if choice == "no":
-#         if display_exiting:
-#             # pymsgbox.alert("Exiting", "Alert")
-#             text_box("Alert", "", "\n\nExiting", ["Ok"])
-#         exit()
-
-
-# def exit_yes(msg: str, title: str = None, *, errmsg: str = None) -> None:
-#     """ exits program after giving user a popup window and raising an error. """
-#     msg = (msg + "\n\n\nExiting." +
-#            f"\n\nCalled from {calling_func(level=3)}"
-#            f"\nCalled from {calling_func(level=2)}"
-#            f"\nCalled from {calling_func(level=1)}"
-#            )
-#     if not errmsg:
-#         errmsg = msg.replace("\n", " ")  # dont fill the console with linefeeds
-#     if not title:
-#         title = "** Exiting Program **"
-#     # pymsgbox.alert(msg, title)
-#     text_box(title, "", "\n\n" + msg, ["Ok"])
-#     raise Exception(errmsg)
-
-
-
-# def text_box(box_title, title2, txt, buttons=None):
-#     """" Display text block with lines separated by \n and choice of buttons at bottom.
-#     :param box_title: main heading on box
-#     :type box_title: str
-#     :param title2: 2nd title above text
-#     :type title2: str
-#     :param txt: text block with lines separated by \n
-#     :type txt: str
-#     :param buttons: list of button text, defaults to ['OK', 'Exit']
-#     :type buttons: list of str
-#     :return: lower case value of selected button
-#     :rtype: str
-#     """
-#
-#     if buttons is None:
-#         buttons = ["OK", "Exit"]
-#
-#     col_factor = 3 # to scale windo equally
-#     row_factor = 25 # to scale windo equally
-#     max_cols = len(max(txt.split("\n"), key=len)) * col_factor
-#     cols = max_cols
-#     # v_scroll = False
-#     col_limit = 80 * col_factor
-#     col_min = 50 * col_factor
-#     if cols > col_limit:
-#         # v_scroll = True
-#         cols = col_limit
-#     elif cols < col_min:
-#         cols = col_min
-#
-#
-#     h_scroll = False
-#     row_limit = 80
-#     row_min = 10
-#     max_rows = len(txt.split("\n"))
-#     rows = max_rows
-#     if rows > row_limit:
-#         h_scroll = True
-#         rows = row_limit
-#     elif rows < row_min:
-#         rows = row_min
-#
-#     layout = [
-#         [sg.Text(title2,font=("Arial", 18))],
-#         [sg.Multiline(txt, autoscroll=False, horizontal_scroll = h_scroll, expand_x=True,
-#                       expand_y=True, enable_events=True )],
-#         [sg.Button(text) for text in buttons],
-#     ]
-#
-#     event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-#                               use_custom_titlebar=True, size=(600,rows*row_factor), disable_close=True,
-#                               resizable=True, grab_anywhere	= True).read(close=True)
-#     # event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-#     #                           use_custom_titlebar=True, size=(cols,rows), disable_close=True,
-#     #                           resizable=True, grab_anywhere	= True).read(close=True)
-#     if event is not None:
-#         event = event.lower()
-#     return event
-#
-
-# def get_dir_name(box_title, title2, initial_dir):
-#     """ show an "Open" dialog box and return the selected directory. Replaced askdirectory with pyeasygui
-#     :param title2:
-#     :type title2:
-#     """
-#
-#     layout = [
-#         [sg.Text(title2,font=("Arial", 18))],
-#         [
-#          sg.Input(key="-IN-", expand_x=True),
-#          sg.FolderBrowse(initial_folder=os.path.expanduser(initial_dir))
-#          ],
-#         [sg.Button("Choose")],
-#     ]
-#
-#     # event, values = sg.Window(heading_in_box, layout, size=(600, 100)).read(close=True)
-#     event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-#                               size=(1000,150), use_custom_titlebar=True ).read(close=True)
-#
-#     dir_name = values['-IN-']
-#     if dir_name == "":
-#         exit_yes("No directory name chosen")
-#
-#     return dir_name
-#
-#
-# def get_file_name(box_title, title2, initial_dir):
-#     """ show an "Open" dialog box and return the selected file name. Replaced askopenfilename with pyeasygui
-#     :param title2: heading of the box
-#     :type title2: text next to input field
-#     """
-#     #"Select Sincere address export file 'all-parent-campaign-requests-yyyy-mm-dd.csv'"
-#     layout = [
-#         [sg.Text(title2,font=("Arial", 18))],
-#         [
-#          sg.Input(key="-IN-", expand_x=True),
-#          sg.FileBrowse(initial_folder=os.path.expanduser(initial_dir))
-#          ],
-#         [sg.Button("Choose")],
-#     ]
-#
-#     # event, values = sg.Window(heading_in_box, layout, size=(600, 100)).read(close=True)
-#     event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-#                               size=(1000, 150), use_custom_titlebar=True).read(close=True)
-#     # sg.Window.close()
-#
-#     file_name = values['-IN-']
-#     if file_name == "":
-#         exit_yes("No file name chosen")
-#
-#     return file_name
-#
 
 def read_sincere_request_file(input_file):
     """ read the downloaded Sincere csv of requests and create df with all necessary variables"""
@@ -813,11 +569,14 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
 
     # Run pivot on Master without county campaigns
     logger.debug("calling make_pivot")
-    make_pivot(writer, sincere_df, [report_var], ['master_campaign'], 'sum', 'Masters', 'B10')
+    # make_pivot(writer, sincere_df, [report_var], ['master_campaign'], 'sum', 'Masters', 'B10')
+    make_pivot(writer, sincere_df, [report_var], ['election', 'master_campaign'], 'sum', 'Masters', 'C10')
 
     # Run standalone pivot on campaigns
     logger.debug("calling make_pivot")
-    make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
+    # make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
+    make_pivot(writer, sincere_df, [report_var], ['election', 'master_campaign', 'parent_campaign_name'], 'sum',
+               'Campaigns', 'D10')
 
 
     logger.debug("calling make_pivot")
@@ -889,7 +648,8 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
 
         # pivot on campaigns
         # make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], np.sum, 'Campaigns', 'C10')
-        make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
+        # make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
+        make_pivot(writer, xlo, [report_var], ['election', 'master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'D10')
 
         # pivot on writers/teams
         # make_pivot(writer, xlo, [report_var], ['team_name'], np.sum, 'Team Sums', 'B10')
@@ -904,13 +664,16 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
 
         # Meika's two reports - cols by campaign not date
         # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], np.sum, 'Team by Campaigns', 'B11')
-        make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], 'sum', 'Team by Campaigns', 'B11')
+        # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], 'sum', 'Team by Campaigns', 'B11')
+        make_pivot(writer, xlo, ['election', 'master_campaign', 'parent_campaign_name'], ['team_name'], 'sum',
+                   'Team by Campaigns', 'B11')
 
         # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], np.sum,
         #            'Teams w Writers by Campaign', 'B11')
-        make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], 'sum',
-                   'Teams w Writers by Campaign', 'B11')
-
+        # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], 'sum',
+        #            'Teams w Writers by Campaign', 'B11')
+        make_pivot(writer, xlo, ['election', 'master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], 'sum',
+                   'Teams w Writers by Campaign', 'C11')
         # # TODO: sort campaigns by master latest date (which?) then campaign latest date, not alpha
 
         for team in teams:
@@ -1331,6 +1094,17 @@ def upload_files(drive_service):
     """ upload report files from local drive to google drive and alert recipients via google permissions
     """
 
+    choice = text_box(f"\nAre these email messages ok to use?\n\n"
+                      f"Org Weekly:\n'{ORG_W_PERMISSION_MSG}'\n\n"
+                      f"Admin Weekly:\n'{ROV_W_PERMISSION_MSG}'\n\n"
+                      f"Admin Monthly:\n'{ROV_M_PERMISSION_MSG}'\n\n"
+                      f"Org Monthly:\n'{ORG_M_PERMISSION_MSG}'\n\n"
+                      f"Admin Email Addresses:\n{CORE_EMAIL_LIST}\n\n",
+                      "Check Email Messages", "",  ['Yes', 'No'])
+    if choice == "no":
+        exit()
+
+
     # choice = pymsgbox.confirm("Upload admin report?", "Upload Admin Reports?", ['Yes', 'No'])
     choice = text_box("\n\nUpload Admin Reports?", "Upload admin report?", "",  ['Yes', 'No'])
     upload_admin = False
@@ -1431,7 +1205,7 @@ def main_program():
                        f"3. Get Sincere users (to assign google read permissions):\n\n"
                        f"   Reports >\n"
                        f"   New Report >\n"
-                       f"   All USERS\n\n\n"),
+                       f"   All USERS"),
                         "REMINDER", "",
                        buttons=["Ok", "Exit"],
                           )
