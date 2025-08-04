@@ -7,22 +7,17 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
 # ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
 #                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                   f"Click to open.")
+# ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER,  "
+#                         "is available for your room. "
+#                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser.")
 ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report is available for your room. "
-                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser.")
-# ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report is available for your room. "
-#                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-#                         "\n\nWeekly addresses to writers has jumped 2 1/2 times over the last 4 weeks - "
-#                         "keep up the good work!!!"
-#                         "\n\n We are currently out of FL addresses waiting on our data vendor to supply them.\n\n"
-#                         "Click to open.")
-ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                  f"Click to open.")
+                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                        "Click to open.")
+# ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the CORE GROUP. "
+#                   f"Click to open.")
 # ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last weekly for this campaign cycle.")
-# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last weekly for this campaign cycle. "
-#                         "\n\n** Note that weekly addresses to writers has jumped over the last 4 weeks "
-#                         "from 96K to 120K to 210K to 267K!!  Writers are taking over 20K per day!"
-#                         "\n** We are now out of FL addresses waiting on PDI.\n\n"
-#                         "Click to open.")
+ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                        "Click to open.")
 
 # MONTHLY messages
 # ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
@@ -271,12 +266,12 @@ def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=
                                f"\n\nError=\n{e}",
                                "Google Credential Issue")
                 logger.debug("refresh failed - going to run bek_cred_flow")
-                creds = bek_cred_flow()
+                credsX = bek_cred_flow()
                 pymsgbox.alert(f"Creds(request)) created.\nRerun program and you should not be prompted for login.",
                                "Google Credential Created")
-                exit()  # TODO: why does this error with SIGDEF?  It used to wok.  Explore.
+                # exit()  # TODO: why does this error with SIGDEF?  It used to wok.  Explore.
         else:
-            creds = bek_cred_flow()
+            credsX = bek_cred_flow()
             
         # Save the credentials for the next run
         if write_token:
@@ -357,6 +352,9 @@ def calling_func(level=0):
 def read_sincere_request_file(input_file):
     """ read the downloaded Sincere csv of requests and create df with all necessary variables"""
     request_df = pd.read_csv(input_file, na_filter=False)
+
+    # request_df = request_df[request_df['org_name'].str.contains('Haar')]
+    # request_df.to_excel('request_df.xlsx', index=False)
 
     # Check heading fields in Sincere request file to ensure fields didn't move/change
     check_df_headers(request_df,
@@ -734,12 +732,14 @@ def create_report_files():
     input_file = get_file_name("Pick a File",
                                "Select Sincere address export file 'all-parent-campaign-REQUESTS-yyyy-mm-dd'",
                                SINCERE_DOWNLOAD_DIR)
+    # input_file = Path('/Users/Denise/Downloads/all-parent-campaigns-requests-2025-08-01.csv')
 
     factory_csv = get_file_name("Pick File",
                                 f"Pick a parent-campaign file to summarize (eg "
                                 f"'parent-campaign-address-counts-2023-08-03.csv'."
                                 f"\n\nCreate via ROV > Reports > New Report > Parent Campaign Address COUNTS",
                                 SINCERE_DOWNLOAD_DIR)
+    # factory_csv = Path('/Users/Denise/Downloads/parent-campaign-address-counts-2025-08-01.csv')
 
     # Create dataframe of excel sheet data
     sincere_df = read_sincere_request_file(input_file)
@@ -1175,17 +1175,7 @@ def initialize():
 
     return logger_a
 
-
-def main_program():
-    """ create Sincere reports and upload them """
-
-    my_logger = initialize()  # mostly set basic logger
-    my_logger.setLevel(logging.DEBUG)  # level of logger to see on console
-    logging.getLogger(name='my_logger').info(f"In {inspect.stack()[0][3]} - starting")
-
-    drive_service, sheet_service = create_google_services()
-    logging.getLogger(name='my_logger').debug(f"In {inspect.stack()[0][3]} - finished creating google services")
-
+def reminder():
     # Identify which VoterLetters files should be downloaded before starting
     if True:
         choice = text_box(
@@ -1212,14 +1202,31 @@ def main_program():
         if choice == "exit":
             exit()
 
-    choice = text_box(
-                      (f"\n'Run' to create the admin report and room reports locally\n\n"
-                           f"'Upload' to copy either the admin report, room reports, or both to Google sheets and send "
-                           f"notifications to Organizers\n\n"
-                           f"'Exit' to start over"
-                           ),
-                      'Run, Upload or Exit?', "",
-                      buttons=["Run", 'Upload', 'Exit'])
+def main_program():
+    """ create Sincere reports and upload them """
+
+    my_logger = initialize()  # mostly set basic logger
+    my_logger.setLevel(logging.DEBUG)  # level of logger to see on console
+    logging.getLogger(name='my_logger').info(f"In {inspect.stack()[0][3]} - starting")
+
+    drive_service, sheet_service = create_google_services()
+    logging.getLogger(name='my_logger').debug(f"In {inspect.stack()[0][3]} - finished creating google services")
+
+    # Identify which VoterLetters files should be downloaded before starting
+    reminder()
+
+    if True:
+        choice = text_box(
+                          (f"\n'Run' to create the admin report and room reports locally\n\n"
+                               f"'Upload' to copy either the admin report, room reports, or both to Google sheets and send "
+                               f"notifications to Organizers\n\n"
+                               f"'Exit' to start over"
+                               ),
+                          'Run, Upload or Exit?', "",
+                          buttons=["Run", 'Upload', 'Exit'])
+    else:
+        choice = 'run'
+
     if choice == "exit":
         exit()
 
