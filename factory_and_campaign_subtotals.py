@@ -10,13 +10,17 @@ def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=No
 
     """
 
+    from loguru import logger
+
+    logger.debug("entered factory_and_campaign_subtotals")
+
     SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 
     import pandas as pd
     from datetime import datetime, timedelta
     from loguru import logger
-    from bekutils import sumby_w_totals
-    from bekutils import exit_yes, get_file_name
+    from uvbekutils import sumby_w_totals
+    from uvbekutils import exit_yes, get_file_name
 
     if factory_csv is None:
         factory_csv = get_file_name("Pick File",
@@ -67,6 +71,8 @@ def factory_and_campaign_subtotals(factory_csv=None, factory_must_have_string=No
     # date_pulled = datetime.strptime(str(factory_csv)[-14:-4], '%Y-%m-%d')+timedelta(days=-1)
     date_pulled = datetime.strptime(str(factory_csv)[-14:-4], '%Y-%m-%d')
     date_pulled_str = date_pulled.strftime('%Y-%m-%d')
+
+    logger.debug("leaving factory_and_campaign_subtotals")
 
     return df_pt, date_pulled_str
 

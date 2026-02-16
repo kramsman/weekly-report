@@ -2,36 +2,38 @@
 Assign permissions to organizers which sends a Google notification.
 Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because using Git.
  """
+from uvbekutils import scroll_box
 
 # WEEKLY messages
-# ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
-#                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-#                   f"Click to open.")
+
 # ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report, THE LAST WEEKLY UNTIL THE MIDTERMS IN MARCH.  "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser.")
-ORG_W_PERMISSION_MSG = ("The FINAL WEEKLY Sincere summary report is available for your room. "
-                        "IT IS THE LAST UNTIL THE MIDTERMS IN 2026."
-                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                        )
+# ORG_W_PERMISSION_MSG = ("The FINAL WEEKLY Sincere summary report is available for your room. "
+#                         "IT IS THE LAST UNTIL THE MIDTERMS IN 2026."
+#                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+#                         )
+ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
+                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+                  f"Click to open.")
 
 # ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the CORE GROUP. "
 #                   f"Click to open.")
-ROV_W_PERMISSION_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, THE LAST UNTIL THE MIDTERMS IN 2026.")
-# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-#                         "Click to open.")
+# ROV_W_PERMISSION_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, THE LAST UNTIL THE MIDTERMS IN 2026.")
+ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                        "Click to open.")
 
 # MONTHLY messages
-ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
-                  f"Click to open.")
-# ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+# ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
 #                   f"Click to open.")
+ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+                  f"Click to open.")
 
-# ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
-#                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-#                   "Click to open.")
-ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room, the last monthly for this campaign cycle.. "
+ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                   "Click to open.")
+# ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room, the last monthly for this campaign cycle.. "
+#                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+#                   "Click to open.")
 
 CORE_EMAIL_LIST = ['kramsman@yahoo.com',
                    'rovkatyhickman@gmail.com',
@@ -56,6 +58,8 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
 # then 'APi and Services' (upper left)>credentials.  +Create > Oauth > desktop
 # delete token.json / credentials.json.  Rename to credentials, copy in
 
+# FIXME: Import from the google_scripts directory set up the CFCG directory project.
+
 # TODO: close 'select user list' window before running kicks off
 # TODO: prompt for room report creation when Running?  Or does it not take that long, better to have all?
 # TODO: pymsgbox prompt before tk openfile/dir because titles not showing
@@ -72,6 +76,17 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
 # TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
 # TODO: writer errors assigning permissions to a file rather than pymsgboxes during run
 
+import subprocess
+import sys
+
+if True:  # DOES NOT WORK AS PACKAGE this updates the uvbekutils package which contains the little helper programs
+    subprocess.run(["uv", "add", "uvbekutils", "--upgrade-package", "uvbekutils"], check=True)
+    #
+    # from terminal
+    # uv add uvbekutils@git+https://github.com/kramsman/uvbekutils.git
+    # subprocess.run(["uv", "add","uvbekutils@git+https://github.com/kramsman/uvbekutils.git@optiona_showbuttons"],
+    #                check=True)
+    # subprocess.run(["uv", "add", "uvbekutils", "--upgrade-package", "uvbekutils@optiona_showbuttons"], check=True)
 
 import datetime as dt
 import glob
@@ -81,10 +96,10 @@ import logging
 import os
 from loguru import logger
 from pathlib import Path
-from tkinter import Tk  # from tkinter import Tk for Python 3.x
-from tkinter.filedialog import askdirectory
-from tkinter.filedialog import askopenfilename
-import PySimpleGUI as sg
+# from tkinter import Tk  # from tkinter import Tk for Python 3.x
+# from tkinter.filedialog import askdirectory
+# from tkinter.filedialog import askopenfilename
+# import PySimpleGUI as sg
 import sys
 
 import numpy as np
@@ -104,8 +119,10 @@ from openpyxl.styles import Font
 import shutil
 import traceback
 import re
-from bekutils import setup_loguru, autosize_xls_cols, bad_path_create, exit_yes_no, exit_yes, \
-    text_box, get_file_name, get_dir_name, check_ws_headers
+from uvbekutils import setup_loguru, autosize_xls_cols, bad_path_create, exit_yes_no, exit_yes, \
+    get_file_name, get_dir_name, check_ws_headers
+from uvbekutils import select_file
+from uvbekutils import pyautobek
 from factory_and_campaign_subtotals import factory_and_campaign_subtotals
 
 # log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
@@ -126,7 +143,7 @@ logger.debug(f"({ROOT_PATH=}")
 
 # string to filter factories.  Can not filter for 'not locked' because that would exclude some current year closed
 # campaigns
-FACTORY_FILTER_STRING = '-2025'
+FACTORY_FILTER_STRING = '-2026'
 
 # for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
@@ -387,8 +404,7 @@ def read_sincere_request_file(input_file):
     request_df['team_name'] = request_df['team_name'].str.replace(":","-").str.replace("\\","-").str.replace("/","-")
 
     request_df = request_df[~request_df['org_name'].isin(['ROV Test Silo', 'ROV Training Silo', 'ROV Sample Silo'])]  # select records for one Org
-    teams = request_df['team_name'].unique()
-    teams.sort()
+    teams = sorted(request_df['team_name'].unique())
 
     state_list = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN",
                   "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM",
@@ -517,6 +533,7 @@ def make_chart(writer, df, index_vars, sheet_name):
     # ws.add_chart(c1, "A1")
     # wb.save("SampleChart.xlsx")
     # writer.save()
+    logger.debug("leaving make_chart")
 
 
 def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir_admin, admin_rpt_filename, factory_csv,
@@ -557,6 +574,7 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
     # Report on Masters only using sum w subtotals
     factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
                                  break_fields="[('Election', True), ('Factory', False), ]")
+    logger.debug("completed factory_and_campaign_subtotals")
 
     factory_tots.sort_index(level=['Election', 'Factory'], key=df_sort_func, ascending=True, inplace=True)
     df_to_sheet(writer, factory_tots, 'Assigned_by_state', freeze_cell="C8")
@@ -630,8 +648,11 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
     else:
         exit_yes(f"Report_by not W or M: {report_by}")
 
-    orgs = sincere_df['org_name'].unique()
-    orgs[::-1].sort()
+    orgs = sorted(sincere_df['org_name'].unique(), reverse=True)
+
+    # master_campaigns = sincere_df['master_campaign'].unique()
+    # master_campaigns = sorted(master_campaigns)
+
 
     for org in orgs:
         print("Org: " + org)
@@ -645,8 +666,8 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
 #    outputDirWFile = os.path.join(outputDir,Path(InputFile).stem + "-" + reportBy)
 
 
-        teams = xlo['team_name'].unique()
-        teams.sort()
+        teams = sorted(xlo['team_name'].unique())
+
         writer = pd.ExcelWriter(excel_output_file, engine='openpyxl')
 
         # pivot on campaigns
@@ -725,7 +746,7 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
 def create_report_files():
     """ produce all the spreadsheet reports locally"""
 
-    report_by = text_box("\n\n[W]eekly or [M]onthly report?", "Date Format", "", ["W", "M", 'Exit'])
+    report_by = pyautobek.confirm("\n\n[W]eekly or [M]onthly report?", "Date Format", ["W", "M", 'Exit'])
     report_by = report_by.upper()
     if report_by == 'M':
         report_var = "month"
@@ -734,16 +755,36 @@ def create_report_files():
     else:
         exit()
 
-    input_file = get_file_name("Pick a File",
-                               "Select Sincere address export file 'all-parent-campaign-REQUESTS-yyyy-mm-dd'",
-                               SINCERE_DOWNLOAD_DIR)
+    if True:  # for debugging
+        input_file = select_file("Pick a Sincere Requests File",
+                                    SINCERE_DOWNLOAD_DIR,
+                                 'all-parent-campaigns-requests*.csv',
+                                 ["Select", "Cancel"],
+                                 "file",
+                                 "Select Sincere address export file 'all-parent-campaign-REQUESTS-yyyy-mm-dd.csv'"
+                                 )
+    else:
+        input_file = "/Users/Denise/Downloads/all-parent-campaigns-requests-2026-02-16.csv"
+
+    if input_file is None:
+        exit()
     # input_file = Path('/Users/Denise/Downloads/all-parent-campaigns-requests-2025-08-01.csv')
 
-    factory_csv = get_file_name("Pick File",
-                                f"Pick a parent-campaign file to summarize (eg "
+    if True:
+        factory_csv = select_file("Pick File",
+                              SINCERE_DOWNLOAD_DIR,
+                              'parent-campaign-address-counts*.csv',
+                              ["Select", "Cancel"],
+                              'file',
+                              f"Pick a parent-campaign file to summarize (eg "
                                 f"'parent-campaign-address-counts-2023-08-03.csv'."
                                 f"\n\nCreate via ROV > Reports > New Report > Parent Campaign Address COUNTS",
-                                SINCERE_DOWNLOAD_DIR)
+                              )
+    else:
+        factory_csv = "/Users/Denise/Downloads/parent-campaign-address-counts-2026-02-16.csv"
+
+    if factory_csv is None:
+        exit()
     # factory_csv = Path('/Users/Denise/Downloads/parent-campaign-address-counts-2025-08-01.csv')
 
     # Create dataframe of excel sheet data
@@ -778,7 +819,7 @@ def create_report_files():
     file_date = Path(input_file).stem[-10:]
 
     master_campaigns = sincere_df['master_campaign'].unique()
-    master_campaigns.sort()
+    master_campaigns = sorted(master_campaigns)
 
     ## add dicts to 'level_dicts'; dict will be used for sort values for and dict name matching level name in multiindex
     ## working version to play can be found in sort df using dict.py
@@ -822,11 +863,11 @@ def create_report_files():
     create_room_reports(sincere_df, sincere_data_file_name, file_date, report_by, output_dir_w_file)
 
     print("\nDone with all orgs.")
-    text_box(f"Org reports produced. In:"
+    pyautobek.alert(f"Org reports produced. In:"
                f"\n\n{OUTPUT_DIR_REPORTS}"
                f"\n\n\nAdmin reports produced. In:"
-               f"\n\n{OUTPUT_DIR_ADMIN}","Done!", "",
-             ["Ok"])
+               f"\n\n{OUTPUT_DIR_ADMIN}","Done!",
+                    )
 
 
 def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id):
@@ -849,9 +890,9 @@ def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id)
               f"path: {file_to_upload_w_path}")
         # pymsgbox.alert(f"**** CONVERTING XLS FILE TO GOOGLE SHEET: Uploaded file name:  {file_to_upload_w_path}",
         #            "CHECK PYTHON CONSOLE FOR ERROR")
-        text_box(f"\n\n**** CONVERTING XLS FILE TO GOOGLE SHEET: Uploaded file name: "
-                     f" {file_to_upload_w_path}","CHECK PYTHON CONSOLE FOR ERROR", "",
-                 ["Ok"])
+        pyautobek.alert(f"\n\n**** CONVERTING XLS FILE TO GOOGLE SHEET: Uploaded file name: "
+                     f" {file_to_upload_w_path}","CHECK PYTHON CONSOLE FOR ERROR",
+                        )
 
     try:
         file = drive_service.files().create(body=file_metadata,
@@ -864,9 +905,9 @@ def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id)
           f"{file_to_upload_w_path}")
         # pymsgbox.alert(f"**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}",
         #            "CHECK PYTHON CONSOLE FOR ERROR")
-        text_box(f"\n\n**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}",
-                 "CHECK PYTHON CONSOLE FOR ERROR", "",
-                 ["Ok"])
+        pyautobek.alert(f"\n\n**** ERROR WITH UPLOAD: Uploaded file name: {file_name_wo_ext}",
+                 "CHECK PYTHON CONSOLE FOR ERROR",
+                        )
 
     uploaded_file_id = file.get('id')
 
@@ -917,10 +958,10 @@ def permission_to_drive_file(drive_service, drive_file_id, email_flag, email, pe
             # pymsgbox.alert(
             #     f"*****  ERROR GIVING PERMISSION: Email: {email}, Uploaded file id: {drive_file_id}",
             #     "CHECK PYTHON CONSOLE FOR ERROR")
-            text_box(f"Error giving permission, ok to ignore: (likely blocked by recipient): Email: "
+            pyautobek.alert(f"Error giving permission, ok to ignore: (likely blocked by recipient): Email: "
                          f"{email}, Uploaded file id: {drive_file_id}",
-                     "Click OK to Continue", "",
-                     ["Ok"])
+                     "Click OK to Continue",
+                            )
 
     a=1
 
@@ -1102,51 +1143,69 @@ def upload_files(drive_service):
     """ upload report files from local drive to google drive and alert recipients via google permissions
     """
 
-    choice = text_box(f"\nAre these email messages ok to use?\n\n"
+    choice = pyautobek.confirm(f"\nAre these email messages ok to use?\n\n"
                       f"Org Weekly:\n'{ORG_W_PERMISSION_MSG}'\n\n"
                       f"Admin Weekly:\n'{ROV_W_PERMISSION_MSG}'\n\n"
                       f"Admin Monthly:\n'{ROV_M_PERMISSION_MSG}'\n\n"
                       f"Org Monthly:\n'{ORG_M_PERMISSION_MSG}'\n\n"
                       f"Admin Email Addresses:\n{CORE_EMAIL_LIST}\n\n",
-                      "Check Email Messages", "",  ['Yes', 'No'])
+                      "Check Email Messages",   ['Yes', 'No'])
     if choice == "no":
         exit()
 
 
     # choice = pymsgbox.confirm("Upload admin report?", "Upload Admin Reports?", ['Yes', 'No'])
-    choice = text_box("\n\nUpload Admin Reports?", "Upload admin report?", "",  ['Yes', 'No'])
+    choice = pyautobek.confirm("\n\nUpload Admin Reports?", "Upload admin report?",  ['Yes', 'No'])
     upload_admin = False
     if choice == "yes":
         upload_admin = True
         if True:  # False for testing w hardcoded admin file
             # pymsgbox.alert("Select ROV Admin report to upload to Core")
-            str_admin_report_to_upload = get_file_name("Select ROV ADMIN report to upload to Core Group",
-                                                       "",
-                                                       OUTPUT_DIR_ADMIN)
+            str_admin_report_to_upload = select_file("Select ROV ADMIN report to upload to Core Group",
+                                                          OUTPUT_DIR_ADMIN,
+                                                     'ROVWide*.xlsx',
+                                                     ["Select", "Cancel"],
+                                                     'file',
+                                                     f"Select ROV ADMIN report to upload to Core Group",
+                                                     )
+            if str_admin_report_to_upload is None:
+                exit()
         else:
             str_admin_report_to_upload = "/Users/Denise/Library/CloudStorage/Dropbox/Postcard Files/VL Admin " \
                                           "Reports/TEST ROVWide Sincere Summary 2023-03-14-W.xlsx"
 
 
     # choice = pymsgbox.confirm("Upload room reports?", "Upload Room Reports?", ['Yes', 'No'])
-    choice = text_box("\n\nUpload Room Reports?", "Upload room reports?", "", ['Yes', 'No'])
+    choice = pyautobek.confirm("\n\nUpload Room Reports?", "Upload room reports?", ['Yes', 'No'])
     upload_room = False
     if choice == "yes":
         upload_room = True
         if True:  # False for testing w report directory hardcoded file
             # pymsgbox.alert("Select report directory to UPLOAD")
-            str_report_dir_to_upload = get_dir_name("Select a REPORT DIRECTORY to upload",
-                                                    "",
-                                                    OUTPUT_DIR_REPORTS)
+            str_report_dir_to_upload = select_file("Select a REPORT DIRECTORY to upload",
+                                                    OUTPUT_DIR_REPORTS,
+                                                   'all-parent-campaigns-requests*',
+                                                   ["Select", "Cancel"],
+                                                   "dir",
+                                                   "Select the REPORT DIRECTORY",
+                                                   )
+            if str_report_dir_to_upload is None:
+                exit()
         else:
             # str_report_dir_to_upload = "/Users/Denise/Library/CloudStorage/Dropbox/Postcard Files/VL Org Reports/TEST all-parent-campaigns-requests-2023-03-14-W"
             str_report_dir_to_upload = "/Users/Denise/Library/CloudStorage/Dropbox/Postcard Files/VL Org Reports/all-parent-campaigns-requests-2023-05-15 GIDEON-W"
 
         if True:  # True prompts for users file to read; false uses hardcoded test file
             # pymsgbox.alert("Select Sincere export file for USER LIST (all-users-yyyy-mm-dd.csv)")
-            sincere_user_file = get_file_name("Select Sincere export file for USER LIST (all-users-yyyy-mm-dd.csv)",
-                                              "",
-                                              SINCERE_DOWNLOAD_DIR)
+            sincere_user_file = select_file("Select Sincere export file for USER LIST (all-users-yyyy-mm-dd.csv)",
+                                            SINCERE_DOWNLOAD_DIR,
+                                            'all-users*.csv',
+                                            ["Select", "Cancel"],
+                                            "file",
+                                            "Select the Sincere report file for all users",
+                                            )
+            if sincere_user_file is None:
+                exit()
             df = pd.read_csv(sincere_user_file, usecols=['name', 'email', 'role', 'is_active', 'organization'])
         else:
             df = pd.read_csv('/Users/Denise/Downloads/all-users-2023-05-15 GIDEON.csv',
@@ -1189,7 +1248,7 @@ def initialize():
 def reminder():
     # Identify which VoterLetters files should be downloaded before starting
     if True:
-        choice = text_box(
+        choice = pyautobek.confirm(
                       (f"\nDownload data from Sincere before running.\n\n"
                        f"1. Get addresses assigned in Sincere:\n\n"
                        f"   All Enterprise >\n"
@@ -1207,7 +1266,7 @@ def reminder():
                        f"   Reports >\n"
                        f"   New Report >\n"
                        f"   All USERS"),
-                        "REMINDER", "",
+                        "REMINDER",
                        buttons=["Ok", "Exit"],
                           )
         if choice == "exit":
@@ -1227,13 +1286,13 @@ def main_program():
     reminder()
 
     if True:
-        choice = text_box(
+        choice = pyautobek.confirm(
                           (f"\n'Run' to create the admin report and room reports locally\n\n"
                                f"'Upload' to copy either the admin report, room reports, or both to Google sheets and send "
                                f"notifications to Organizers\n\n"
                                f"'Exit' to start over"
                                ),
-                          'Run, Upload or Exit?', "",
+                          'Run, Upload or Exit?',
                           buttons=["Run", 'Upload', 'Exit'])
     else:
         choice = 'run'

@@ -8,12 +8,12 @@ from pathlib import Path
 import pandas as pd
 from openpyxl.styles import Font
 
-from bekutils import sumby_w_totals
-from bekutils import setup_loguru
-from bekutils import exe_path
-from bekutils import autosize_xls_cols
-from bekutils import exit_yes
-from bekutils import get_file_name
+from uvbekutils import sumby_w_totals
+from uvbekutils import setup_loguru
+from uvbekutils import exe_path
+from uvbekutils import autosize_xls_cols
+from uvbekutils import exit_yes
+from uvbekutils import get_file_name
 
 
 SINCERE_DOWNLOAD_DIR = "~/Downloads/"
