@@ -7,31 +7,34 @@ Taken from 'Weekly VL Rpt V4.3.py' but no more version designations because usin
 # ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
 #                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                   f"Click to open.")
-# ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER,  "
-#                         "is available for your room. "
+# ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report, THE LAST WEEKLY UNTIL THE MIDTERMS IN MARCH.  "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser.")
-ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report is available for your room. "
+ORG_W_PERMISSION_MSG = ("The FINAL WEEKLY Sincere summary report is available for your room. "
+                        "IT IS THE LAST UNTIL THE MIDTERMS IN 2026."
                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                        "Click to open.")
+                        )
+
 # ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the CORE GROUP. "
 #                   f"Click to open.")
-# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last weekly for this campaign cycle.")
-ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-                        "Click to open.")
+ROV_W_PERMISSION_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, THE LAST UNTIL THE MIDTERMS IN 2026.")
+# ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+#                         "Click to open.")
 
 # MONTHLY messages
-# ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
-#                   f"Click to open.")
-ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
                   f"Click to open.")
+# ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+#                   f"Click to open.")
 
-ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
+# ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
+#                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
+#                   "Click to open.")
+ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room, the last monthly for this campaign cycle.. "
                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                   "Click to open.")
 
-
 CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-                   'josi@centerforcommonground.org',
+                   'rovkatyhickman@gmail.com',
                    'Andrea@centerforcommonground.org',
                    'dee@centerforcommonground.org',
                    'comstockrov@gmail.com',
@@ -39,7 +42,9 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
                    'bill.becky.rov@gmail.com',
                    'carey@harmonicsystems.net',
                    'gideon.asher1@gmail.com',
+                   'gabriel@centerforcommonground.org',
                    ]
+# 'josi@centerforcommonground.org',
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
@@ -1086,6 +1091,9 @@ def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
                 # logging.getLogger(name='my_logger').info(f"{inspect.stack()[0][3]} - Adding room permission for email: "
                 #     f"{email}")
                 # pymsgbox.confirm("Wait a bit and then try")
+
+                # TODO: Could excluding emails from upload be done here?
+
                 permission_to_drive_file(drive_service, uploaded_file_id, SEND_PERMISSION_EMAIL_FLAG, email, permission_msg)
                 a=1
 
@@ -1147,6 +1155,9 @@ def upload_files(drive_service):
         df = df.sort_values(['organization', 'name'], ascending=(True, True))
         organizer_email_list = df.loc[(df['role'].isin(['organizer']) & (df['is_active'])),
                                        ['organization', 'email']].values.tolist()
+
+        # TODO: Could excluding emails from upload be done here?
+
         # organizer_email_list = [
         #     ['NY-NYC and Long Island', 'kramsman+nycorg@gmail.com'], ['NY-NYC and Long Island', 'bkramer@kramericore.com']
         # ]
