@@ -106,7 +106,7 @@ def create_report_files() -> None:
     level_dicts = {k.lower(): v for k, v in level_dicts.items()}
 
     # define multiindex_df_sorter function used to sort multiiindex output of groupby by dictionaries
-    def multiindex_df_sorter(*, level: pd.Index, default_level_dict: dict = {}) -> pd.Index:
+    def multiindex_df_sorter(level: pd.Index, default_level_dict: dict = {}) -> pd.Index:
         """Map a MultiIndex level to sort-key values using a level-specific dictionary.
 
         Looks up the level name (case-insensitive) in the outer-scope ``level_dicts``
@@ -114,7 +114,6 @@ def create_report_files() -> None:
         sort key; otherwise items sort as-is (empty dict fallback).
 
         Args:
-            * ():
             level: One level of a pandas MultiIndex to be sorted.
             default_level_dict: Fallback mapping when the level name is not found
                 in ``level_dicts``. Defaults to {}.
