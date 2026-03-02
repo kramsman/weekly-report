@@ -45,8 +45,8 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
                    'carey@harmonicsystems.net',
                    'gideon.asher1@gmail.com',
                    'gabriel@centerforcommonground.org',
+                   'josi@centerforcommonground.org',
                    ]
-# 'josi@centerforcommonground.org',
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
@@ -67,7 +67,6 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
 # TODO: possible - add chart to all org reports (like admin)
 # TODO: Move off my personal google account
 # TODO: Add a tab or separate report that shows writers who have never requested.   How to avoid those invite to receive only and not order?
-# TODO: Can we make TK go to front so it doesn't get missed / crash?
 # TODO: add mapping email from organizer to requested email
 # TODO: add excluded email list to skip giving permission
 # TODO: format all numbers with commas
@@ -79,8 +78,10 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
 import subprocess
 import sys
 
-if True:  # DOES NOT WORK AS PACKAGE this updates the uvbekutils package which contains the little helper programs
+# FIXME below choked -
+if False:  # DOES NOT WORK AS PACKAGE this updates the uvbekutils package which contains the little helper programs
     subprocess.run(["uv", "add", "uvbekutils", "--upgrade-package", "uvbekutils"], check=True)
+    # uv add uvbekutils --upgrade-package uvbekutils
     #
     # from terminal
     # uv add uvbekutils@git+https://github.com/kramsman/uvbekutils.git
@@ -444,8 +445,12 @@ def df_to_sheet(writer, df, sheet_name, freeze_cell=None):
         ws.freeze_panes = mycell
 
 
-def make_pivot(writer, df, report_var, index_vars, aggfunc, sheet_name, freeze_cell):
-    """ template for pivot tables in reports """
+def make_pivot(*, writer, df, report_var, index_vars, aggfunc, sheet_name, freeze_cell):
+    """ template for pivot tables in reports
+
+    Args:
+        * ():
+    """
     df_pt = pd.pivot_table(df, columns=report_var, index=index_vars,
                            values=['addresses_count'], margins=True, dropna=True, aggfunc=aggfunc)
     df_pt = df_pt.sort_index(axis=1, ascending=False)
@@ -591,17 +596,20 @@ def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir
     # Run pivot on Master without county campaigns
     logger.debug("calling make_pivot")
     # make_pivot(writer, sincere_df, [report_var], ['master_campaign'], 'sum', 'Masters', 'B10')
-    make_pivot(writer, sincere_df, [report_var], ['election', 'master_campaign'], 'sum', 'Masters', 'C10')
+    make_pivot(writer=writer, df=sincere_df, report_var=[report_var], index_vars=['election', 'master_campaign'],
+               aggfunc='sum', sheet_name='Masters', freeze_cell='C10')
 
     # Run standalone pivot on campaigns
     logger.debug("calling make_pivot")
     # make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
-    make_pivot(writer, sincere_df, [report_var], ['election', 'master_campaign', 'parent_campaign_name'], 'sum',
-               'Campaigns', 'D10')
+    make_pivot(writer=writer, df=sincere_df, report_var=[report_var],
+               index_vars=['election', 'master_campaign', 'parent_campaign_name'], aggfunc='sum',
+               sheet_name='Campaigns', freeze_cell='D10')
 
 
     logger.debug("calling make_pivot")
-    make_pivot(writer, sincere_df, [report_var], ['org_name'], 'sum', 'Rooms', 'B10')
+    make_pivot(writer=writer, df=sincere_df, report_var=[report_var], index_vars=['org_name'], aggfunc='sum',
+               sheet_name='Rooms', freeze_cell='B10')
 
     wb = writer.book
 
@@ -673,38 +681,45 @@ def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str
         # pivot on campaigns
         # make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], np.sum, 'Campaigns', 'C10')
         # make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
-        make_pivot(writer, xlo, [report_var], ['election', 'master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'D10')
+        make_pivot(writer=writer, df=xlo, report_var=[report_var],
+                   index_vars=['election', 'master_campaign', 'parent_campaign_name'], aggfunc='sum',
+                   sheet_name='Campaigns', freeze_cell='D10')
 
         # pivot on writers/teams
         # make_pivot(writer, xlo, [report_var], ['team_name'], np.sum, 'Team Sums', 'B10')
-        make_pivot(writer, xlo, [report_var], ['team_name'], 'sum', 'Team Sums', 'B10')
+        make_pivot(writer=writer, df=xlo, report_var=[report_var], index_vars=['team_name'], aggfunc='sum',
+                   sheet_name='Team Sums', freeze_cell='B10')
 
         # make_pivot(writer, xlo, [report_var], ['team_name', 'writer_name'], np.sum, 'Teams w Writers', 'C10')
-        make_pivot(writer, xlo, [report_var], ['team_name', 'writer_name'], 'sum', 'Teams w Writers', 'C10')
+        make_pivot(writer=writer, df=xlo, report_var=[report_var], index_vars=['team_name', 'writer_name'],
+                   aggfunc='sum', sheet_name='Teams w Writers', freeze_cell='C10')
 
         # show COUNT (rather than np.sum) of requests to identify potential organizers
-        make_pivot(writer, xlo, [report_var], ['team_name', 'writer_name'], 'count', 'Teams w Counts', 'C10')
+        make_pivot(writer=writer, df=xlo, report_var=[report_var], index_vars=['team_name', 'writer_name'],
+                   aggfunc='count', sheet_name='Teams w Counts', freeze_cell='C10')
         # TODO: change var label on address_count to request_count
 
         # Meika's two reports - cols by campaign not date
         # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], np.sum, 'Team by Campaigns', 'B11')
         # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], 'sum', 'Team by Campaigns', 'B11')
-        make_pivot(writer, xlo, ['election', 'master_campaign', 'parent_campaign_name'], ['team_name'], 'sum',
-                   'Team by Campaigns', 'B11')
+        make_pivot(writer=writer, df=xlo, report_var=['election', 'master_campaign', 'parent_campaign_name'],
+                   index_vars=['team_name'], aggfunc='sum', sheet_name='Team by Campaigns', freeze_cell='B11')
 
         # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], np.sum,
         #            'Teams w Writers by Campaign', 'B11')
         # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], 'sum',
         #            'Teams w Writers by Campaign', 'B11')
-        make_pivot(writer, xlo, ['election', 'master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], 'sum',
-                   'Teams w Writers by Campaign', 'C11')
+        make_pivot(writer=writer, df=xlo, report_var=['election', 'master_campaign', 'parent_campaign_name'],
+                   index_vars=['team_name', 'writer_name'], aggfunc='sum', sheet_name='Teams w Writers by Campaign',
+                   freeze_cell='C11')
         # # TODO: sort campaigns by master latest date (which?) then campaign latest date, not alpha
 
         for team in teams:
             xlt = xlo[xlo['team_name'] == team]
             shname = team[:30]
             # make_pivot(writer, xlt, [report_var], ['team_name', 'writer_name'], np.sum, shname, 'C10')
-            make_pivot(writer, xlt, [report_var], ['team_name', 'writer_name'], 'sum', shname, 'C10')
+            make_pivot(writer=writer, df=xlt, report_var=[report_var], index_vars=['team_name', 'writer_name'],
+                       aggfunc='sum', sheet_name=shname, freeze_cell='C10')
 
         # Insert a notes tab as first one. Must be openpyxl because excelwriter is dataframe only
         wb = writer.book
@@ -755,7 +770,7 @@ def create_report_files():
     else:
         exit()
 
-    if True:  # for debugging
+    if True:  # False out prompt for debugging
         input_file = select_file("Pick a Sincere Requests File",
                                     SINCERE_DOWNLOAD_DIR,
                                  'all-parent-campaigns-requests*.csv',
@@ -770,7 +785,7 @@ def create_report_files():
         exit()
     # input_file = Path('/Users/Denise/Downloads/all-parent-campaigns-requests-2025-08-01.csv')
 
-    if True:
+    if True:  # False out for debugging
         factory_csv = select_file("Pick File",
                               SINCERE_DOWNLOAD_DIR,
                               'parent-campaign-address-counts*.csv',

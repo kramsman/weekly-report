@@ -1,0 +1,14 @@
+[project]
+name = "weeklyreport"
+version = "0.2.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "google>=3.0.0",
+    "google-api-python-client>=2.190.0",
+    "google-auth-oauthlib>=1.2.4",
+    "uvbekutils",
+]
+
+[tool.uv.sources]
+uvbekutils = { git = "https://github.com/kramsman/uvbekutils.git" }
