@@ -10,10 +10,10 @@ from uvbekutils import autosize_xls_cols
 from uvbekutils import exit_yes
 
 from factory_and_campaign_subtotals import factory_and_campaign_subtotals
-from weekly_report.utils.utils import df_to_sheet
+from weekly_report.constants import FACTORY_FILTER_STRING
 from weekly_report.make_chart import make_chart
 from weekly_report.make_pivot import make_pivot
-from weekly_report.constants import FACTORY_FILTER_STRING
+from weekly_report.utils.utils import df_to_sheet
 
 
 def create_admin_report(

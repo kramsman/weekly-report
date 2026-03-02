@@ -1,24 +1,14 @@
 """Create per-room (org) Excel workbooks from Sincere request data."""
 
-  import os
+import os
 
 import pandas as pd
-from openpyxl.styles import Font
-from openpyxl.styles import Font
-from openpyxl.styles import Font
-from openpyxl.styles import Font
 from openpyxl.styles import Font
 from uvbekutils import autosize_xls_cols
 from uvbekutils import exit_yes
 
-from weekly_report.make_pivot import make_pivot
-from weekly_report.make_pivot import make_pivot
-from weekly_report.make_pivot import make_pivot
-from weekly_report.make_pivot import make_pivot
-from weekly_report.make_pivot import make_pivot
-from weekly_report.make_pivot import make_pivot
-from weekly_report.make_pivot import make_pivot
 from weekly_report.constants import noteLines
+from weekly_report.make_pivot import make_pivot
 
 
 def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_date: str, report_by: str, str_output_dir_rooms: str) -> None:

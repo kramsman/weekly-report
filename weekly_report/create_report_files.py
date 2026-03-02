@@ -3,24 +3,18 @@
 import os
 import shutil
 from pathlib import Path
-from pathlib import Path
 
 import pandas as pd
 from uvbekutils import pyautobek
-from uvbekutils import pyautobek
-from uvbekutils import select_file
 from uvbekutils import select_file
 
-from weekly_report.utils.read_sincere_request_file import read_sincere_request_file
 from weekly_report.constants import FACTORY_FILTER_STRING
 from weekly_report.constants import OUTPUT_DIR_ADMIN
-from weekly_report.constants import OUTPUT_DIR_ADMIN
 from weekly_report.constants import OUTPUT_DIR_REPORTS
-from weekly_report.constants import OUTPUT_DIR_REPORTS
-from weekly_report.constants import SINCERE_DOWNLOAD_DIR
 from weekly_report.constants import SINCERE_DOWNLOAD_DIR
 from weekly_report.create_admin_report import create_admin_report
 from weekly_report.create_room_reports import create_room_reports
+from weekly_report.utils.read_sincere_request_file import read_sincere_request_file
 
 
 def create_report_files() -> None:
