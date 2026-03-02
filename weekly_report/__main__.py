@@ -4,9 +4,6 @@ Assign permissions to organizers which sends a Google notification.
 
 # FIXME: Import from the google_scripts directory set up the CFCG directory project.
 
-# TODO: close 'select user list' window before running kicks off
-# TODO: prompt for room report creation when Running?  Or does it not take that long, better to have all?
-# TODO: pymsgbox prompt before tk openfile/dir because titles not showing
 # TODO speed up the room report upload
 # TODO: possible - add chart to all org reports (like admin)
 # TODO: Move off my personal google account
@@ -15,14 +12,12 @@ Assign permissions to organizers which sends a Google notification.
 # TODO: add excluded email list to skip giving permission
 # TODO: format all numbers with commas
 # TODO: remove pymsgbox references
-# TODO Implement loguru with log file, levels of logging
 # TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
 # TODO: writer errors assigning permissions to a file rather than pymsgboxes during run
 
 from weekly_report.create_report_files import create_report_files
 from weekly_report.google_scripts.google_scripts import create_google_services
 from weekly_report.google_scripts.google_scripts import upload_files
-from weekly_report.initialize import initialize
 from weekly_report.reminder import reminder
 
 # FIXME below choked -
@@ -36,12 +31,9 @@ if False:  # DOES NOT WORK AS PACKAGE this updates the uvbekutils package which 
     #                check=True)
     # subprocess.run(["uv", "add", "uvbekutils", "--upgrade-package", "uvbekutils@optiona_showbuttons"], check=True)
 
-import inspect
 # from apiclient.discovery import build
-import logging
 from loguru import logger
 
-import pandas as pd
 # from apiclient.http import MediaFileUpload  # needed even if Pycharm says not
 # import google.auth.transport.requests
 from uvbekutils import setup_loguru
@@ -51,22 +43,15 @@ from constants import (
 
 setup_loguru("INFO", "DEBUG")
 
-
 logger.info(f"({ROOT_PATH=}")
-
 
 def main():
     """ create Sincere reports and upload them """
 
-    # my_logger = initialize()  # mostly set basic logger
-    # my_logger.setLevel(logging.DEBUG)  # level of logger to see on console
 
-    # logging.getLogger(name='my_logger').info(f"In {inspect.stack()[0][3]} - starting")
     logger.info(f"starting")
 
     drive_service, sheet_service = create_google_services()
-
-    # logging.getLogger(name='my_logger').debug(f"In {inspect.stack()[0][3]} - finished creating google services")
     logger.info("finished creating google services")
 
     # Identify which files should be downloaded before starting
@@ -94,7 +79,6 @@ def main():
         upload_files(drive_service)
 
 
-    # logging.getLogger(name='my_logger').info(f"{inspect.stack()[0][3]} - All done!")
     logger.info(f"All done!")
 
     exit()

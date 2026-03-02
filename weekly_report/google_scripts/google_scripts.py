@@ -47,10 +47,10 @@ from weekly_report.constants import ADMIN_REPORT_FOLDER_ID
 from weekly_report.constants import ADMIN_REPORT_FOLDER_ID
 from weekly_report.constants import CORE_EMAIL_LIST
 from weekly_report.constants import CORE_EMAIL_LIST
-from weekly_report.constants import ORG_M_PERMISSION_MSG
-from weekly_report.constants import ORG_M_PERMISSION_MSG
-from weekly_report.constants import ORG_W_PERMISSION_MSG
-from weekly_report.constants import ORG_W_PERMISSION_MSG
+from weekly_report.constants import ORG_MONTHLY_MSG
+from weekly_report.constants import ORG_MONTHLY_MSG
+from weekly_report.constants import ORG_WEEKLY_MSG
+from weekly_report.constants import ORG_WEEKLY_MSG
 from weekly_report.constants import OUTPUT_DIR_ADMIN
 from weekly_report.constants import OUTPUT_DIR_REPORTS
 from weekly_report.constants import ROOM_REPORT_FOLDER_ID
@@ -60,10 +60,10 @@ from weekly_report.constants import ROOT_PATH
 from weekly_report.constants import ROOT_PATH
 from weekly_report.constants import ROOT_PATH
 from weekly_report.constants import ROOT_PATH
-from weekly_report.constants import ROV_M_PERMISSION_MSG
-from weekly_report.constants import ROV_M_PERMISSION_MSG
-from weekly_report.constants import ROV_W_PERMISSION_MSG
-from weekly_report.constants import ROV_W_PERMISSION_MSG
+from weekly_report.constants import CORE_MONTHLY_MSG
+from weekly_report.constants import CORE_MONTHLY_MSG
+from weekly_report.constants import CORE_WEEKLY_MSG
+from weekly_report.constants import CORE_WEEKLY_MSG
 from weekly_report.constants import SCOPES
 from weekly_report.constants import SEND_PERMISSION_EMAIL_FLAG
 from weekly_report.constants import SEND_PERMISSION_EMAIL_FLAG
@@ -319,11 +319,11 @@ def upload_admin_report(drive_service, admin_report_to_upload):
     if not SEND_PERMISSION_EMAIL_FLAG:
         permission_msg = None
     elif file_name_wo_ext[-2:].lower() == '-m':
-        permission_msg = ROV_M_PERMISSION_MSG
+        permission_msg = CORE_MONTHLY_MSG
         # permission_msg = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
         #                   f"Click to open.")
     else:
-        permission_msg = ROV_W_PERMISSION_MSG
+        permission_msg = CORE_WEEKLY_MSG
         # permission_msg = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
         #                   f"Click to open.")
 
@@ -452,12 +452,12 @@ def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
                 if not SEND_PERMISSION_EMAIL_FLAG:
                     permission_msg = None
                 elif file_name_wo_ext[-2:].lower() == '-m':
-                    permission_msg = ORG_M_PERMISSION_MSG
+                    permission_msg = ORG_MONTHLY_MSG
                     # permission_msg = ("A new MONTHLY VoterLetters summary report is available for your room. "
                     #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                     #                   "Click to open.")
                 else:
-                    permission_msg = ORG_W_PERMISSION_MSG
+                    permission_msg = ORG_WEEKLY_MSG
                     # permission_msg = (f"A new WEEKLY VoterLetters summary report is available for your room. "
                     #                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                     #                   f"Click to open.")
@@ -478,10 +478,10 @@ def upload_files(drive_service):
     """
 
     choice = pyautobek.confirm(f"\nAre these email messages ok to use?\n\n"
-                      f"Org Weekly:\n'{ORG_W_PERMISSION_MSG}'\n\n"
-                      f"Admin Weekly:\n'{ROV_W_PERMISSION_MSG}'\n\n"
-                      f"Admin Monthly:\n'{ROV_M_PERMISSION_MSG}'\n\n"
-                      f"Org Monthly:\n'{ORG_M_PERMISSION_MSG}'\n\n"
+                      f"Org Weekly:\n'{ORG_WEEKLY_MSG}'\n\n"
+                      f"Admin Weekly:\n'{CORE_WEEKLY_MSG}'\n\n"
+                      f"Admin Monthly:\n'{CORE_MONTHLY_MSG}'\n\n"
+                      f"Org Monthly:\n'{ORG_MONTHLY_MSG}'\n\n"
                       f"Admin Email Addresses:\n{CORE_EMAIL_LIST}\n\n",
                       "Check Email Messages",   ['Yes', 'No'])
     if choice == "no":

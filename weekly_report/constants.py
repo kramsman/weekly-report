@@ -2,34 +2,38 @@
 import sys
 from pathlib import Path
 
+######################
 # WEEKLY messages
+######################
 
-# ORG_W_PERMISSION_MSG = ("A new WEEKLY Sincere summary report, THE LAST WEEKLY UNTIL THE MIDTERMS IN MARCH.  "
+# ORG_WEEKLY_MSG = ("A new WEEKLY Sincere summary report, THE LAST WEEKLY UNTIL THE MIDTERMS IN MARCH.  "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser.")
-# ORG_W_PERMISSION_MSG = ("The FINAL WEEKLY Sincere summary report is available for your room. "
+# ORG_WEEKLY_MSG = ("The FINAL WEEKLY Sincere summary report is available for your room. "
 #                         "IT IS THE LAST UNTIL THE MIDTERMS IN 2026."
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                         )
-ORG_W_PERMISSION_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
+ORG_WEEKLY_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                   f"Click to open.")
 
-# ROV_W_PERMISSION_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the CORE GROUP. "
+# CORE_WEEKLY_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the CORE GROUP. "
 #                   f"Click to open.")
-# ROV_W_PERMISSION_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, THE LAST UNTIL THE MIDTERMS IN 2026.")
-ROV_W_PERMISSION_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+# CORE_WEEKLY_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, THE LAST UNTIL THE MIDTERMS IN 2026.")
+CORE_WEEKLY_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
                         "Click to open.")
 
+######################
 # MONTHLY messages
-# ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
+######################
+# CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
 #                   f"Click to open.")
-ROV_M_PERMISSION_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
                   f"Click to open.")
 
-ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
+ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                   "Click to open.")
-# ORG_M_PERMISSION_MSG = ("A new MONTHLY Sincere summary report is available for your room, the last monthly for this campaign cycle.. "
+# ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room, the last monthly for this campaign cycle.. "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                   "Click to open.")
 
@@ -75,6 +79,7 @@ FACTORY_FILTER_STRING = '-2026'
 # for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
 SCOPES = ['https://www.googleapis.com/auth/drive']
+
 # ROOM_REPORT_FOLDER_ID = "1OEAdTnhQoAKpyzFqYdM1ztr42vHAqbk5"  # Folder holding Sincere Organizer Reports
 ROOM_REPORT_FOLDER_ID = "1BcvXzwyEKGiiWSt27NLaassLE0DMgioP"  # 'VoterLetters Organizer Reports' copied to Tech@CFCG
 # ADMIN_REPORT_FOLDER_ID = '1_vTXsMYOwK_TLYaRqC7YA_jolBuqDWP4'
@@ -82,6 +87,7 @@ ROOM_REPORT_FOLDER_ID = "1BcvXzwyEKGiiWSt27NLaassLE0DMgioP"  # 'VoterLetters Org
 # ADMIN_REPORT_FOLDER_ID = '0AOkQpyahstHzUk9PVA'  # FAILED - would not give permission - share drive on Tech@CFCG
 # ADMIN_REPORT_FOLDER_ID = '1hyArqMhrgCJeRoN7tHR8Rmkzn4BvCmpq'  # WORKS - Tech@CFCG my drive folder (NOT share)
 ADMIN_REPORT_FOLDER_ID = '1PU8hcYfE3Vlh5v8Cq60Gup_8lfaFff4b'  # 'VoterLetters Admin Reports' copied to Tech@CFCG
+
 SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
