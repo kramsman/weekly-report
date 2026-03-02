@@ -1,3 +1,6 @@
+"""Build the ROV-wide admin Excel workbook from Sincere request data."""
+
+from collections.abc import Callable
 from pathlib import Path
 
 import pandas as pd
@@ -7,26 +10,38 @@ from uvbekutils import autosize_xls_cols
 from uvbekutils import exit_yes
 
 from factory_and_campaign_subtotals import factory_and_campaign_subtotals
-from factory_and_campaign_subtotals import factory_and_campaign_subtotals
 from weekly_report.utils.utils import df_to_sheet
 from weekly_report.make_chart import make_chart
 from weekly_report.make_pivot import make_pivot
 from weekly_report.constants import FACTORY_FILTER_STRING
 
 
-def create_admin_report(sincere_df, sincere_data_file, report_by, str_output_dir_admin, admin_rpt_filename, factory_csv,
-                        df_sort_func):
-    """ create admin reports and chart.  Sincere data file just for report titles.
+def create_admin_report(
+        sincere_df: pd.DataFrame,
+        sincere_data_file: str,
+        report_by: str,
+        str_output_dir_admin: str,
+        admin_rpt_filename: str,
+        factory_csv: Path,
+        df_sort_func: Callable,
+) -> None:
+    """Create the ROV-wide admin Excel workbook with charts and pivot tables.
+
+    Writes a daily-requests line chart, factory/campaign subtotal sheets,
+    and election/master/room pivot tables to a single .xlsx file. Column
+    widths are auto-sized and header titles are stamped on every sheet.
 
     Args:
-        df_sort_func ():
-        factory_csv ():
-        sincere_df (): df containing df  address request info
-        sincere_data_file (): name of file used to create sincere_df, used for report title.  like
-        'all-parent-campaigns-requests-2024-02-26 test.csv'
-        report_by (): W or M for Weekly or Monthly
-        str_output_dir_admin (): str of directory where admin reports will be placed
-        admin_rpt_filename (): name of the xls file for admin report
+        sincere_df: Filtered Sincere request data for all orgs and factories.
+        sincere_data_file: Source CSV filename, used in sheet header notes,
+            e.g. 'all-parent-campaigns-requests-2024-02-26.csv'.
+        report_by: 'W' for weekly or 'M' for monthly column grouping.
+        str_output_dir_admin: Directory path where the admin .xlsx is written.
+        admin_rpt_filename: Output filename for the admin report .xlsx.
+        factory_csv: Path to the Sincere parent-campaign-address-counts CSV
+            used by factory_and_campaign_subtotals().
+        df_sort_func: Callable that maps a MultiIndex level to sort keys;
+            used to sort factory/election subtotal DataFrames.
     """
 
     print("Org: Enterprise wide")  # TODO: use logger instead of prints

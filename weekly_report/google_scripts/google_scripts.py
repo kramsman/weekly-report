@@ -1,3 +1,5 @@
+"""Google Drive and Sheets API helpers for uploading reports and granting permissions."""
+
 import glob
 import inspect
 import logging
@@ -6,6 +8,7 @@ import re
 import sys
 import traceback
 from pathlib import Path
+from typing import Any
 from pathlib import Path
 from pathlib import Path
 from pathlib import Path
@@ -64,6 +67,8 @@ from weekly_report.constants import CORE_MONTHLY_MSG
 from weekly_report.constants import CORE_MONTHLY_MSG
 from weekly_report.constants import CORE_WEEKLY_MSG
 from weekly_report.constants import CORE_WEEKLY_MSG
+from google.oauth2.credentials import Credentials
+
 from weekly_report.constants import SCOPES
 from weekly_report.constants import SEND_PERMISSION_EMAIL_FLAG
 from weekly_report.constants import SEND_PERMISSION_EMAIL_FLAG
@@ -72,24 +77,48 @@ from weekly_report.constants import SEND_PERMISSION_EMAIL_FLAG
 from weekly_report.constants import SINCERE_DOWNLOAD_DIR
 
 
-def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=None, always_create=False,
-              write_token=True):
-    """ Gets credentials used in setting up google API services.  From webhook 1/6/24.
+def get_creds(scopes: list[str], cred_file: str | None = None, cred_dir: Path | None = None, token_file: str | None = None, token_dir: Path | None = None, always_create: bool = False,
+              write_token: bool = True) -> Credentials:
+    """Obtain valid Google OAuth2 credentials, refreshing or creating as needed.
 
-    Parameters
-    ----------
-    cred_dir :
-    token_file :
+    Reads an existing token file if available, refreshes an expired access
+    token, or runs the full OAuth flow from a credentials JSON file. Alerts
+    the user via pymsgbox if credential files are missing.
+
+    Args:
+        scopes: OAuth2 scopes to request.
+        cred_file: Credentials JSON filename relative to cred_dir.
+            Defaults to '../credentials.json'.
+        cred_dir: Directory containing the credentials file.
+            Defaults to ROOT_PATH.
+        token_file: Token JSON filename relative to token_dir.
+            Defaults to '../token.json'.
+        token_dir: Directory containing the token file.
+            Defaults to ROOT_PATH.
+        always_create: Reserved for future use; not currently implemented.
+            Defaults to False.
+        write_token: If True, write the refreshed token back to disk.
+            Defaults to True.
+
+    Returns:
+        A valid google.oauth2.credentials.Credentials instance.
     """
 
     # import pathlib
     # import pymsgbox
     # from google.auth.transport.requests import Request
     import google.auth.transport.requests
-    from google.oauth2.credentials import Credentials
     from google_auth_oauthlib.flow import InstalledAppFlow
 
     def bek_cred_flow():
+        """Run the installed-app OAuth flow and return new credentials.
+
+        Prompts the user via pymsgbox before opening the browser, then calls
+        InstalledAppFlow.run_local_server().
+
+        Returns:
+            New credentials returned by the OAuth consent screen flow.
+        """
         logger.debug("get_creds using credentials -going to call 'InstalledAppFlow.from_client_secrets_file'")
         flow = InstalledAppFlow.from_client_secrets_file(cred_file, scopes)
         logger.debug(f"got flow: {flow.__dict__=}")
@@ -179,9 +208,22 @@ def get_creds(scopes, cred_file=None, cred_dir=None, token_file=None, token_dir=
     return creds
 
 
-def get_sheet_values(sheet_service, sheet_range, header_strings):
-    """ returns list of lists from a Google sheet range after checking the header strings are expected.
-     Note: google sheet id is hardcoded via variable 'CFCG_LOOKUP_GOOGLE_SHEET_ID'."""
+def get_sheet_values(sheet_service: Any, sheet_range: str, header_strings: str | list[str]) -> list[list]:
+    """Fetch a range from a Google Sheet and validate the header row.
+
+    Retrieves the spreadsheet range, pops the header row, and compares it
+    (case-insensitive) to header_strings. Calls exit_yes() if headers do not
+    match. Spreadsheet ID is hardcoded in CFCG_LOOKUP_GOOGLE_SHEET_ID.
+
+    Args:
+        sheet_service: Authenticated Google Sheets API service resource.
+        sheet_range: A1 notation range to retrieve, e.g. 'Sheet1!A:Z'.
+        header_strings: Expected headers as a comma-separated string or a
+            list of strings.
+
+    Returns:
+        Row data (excluding the header row) as a list of lists.
+    """
     logging.getLogger(name='my_logger').info(f"Starting {inspect.stack()[0][3]}")
 
     CFCG_LOOKUP_GOOGLE_SHEET_ID = 9999
@@ -204,8 +246,22 @@ def get_sheet_values(sheet_service, sheet_range, header_strings):
     return sheet_values
 
 
-def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id):
-    """ upload a local file to a google drive.  Returns fileid of created file """
+def upload_sheet_to_drive(drive_service: Any, file_to_upload_w_path: str | Path, drive_folder_id: str | list[str]) -> str:
+    """Upload a local Excel file to Google Drive as a Google Sheet.
+
+    Accepts a single folder ID string or a list of folder IDs as the
+    destination. Alerts the user via pyautobek if the conversion or upload
+    fails.
+
+    Args:
+        drive_service: Authenticated Google Drive API service resource.
+        file_to_upload_w_path: Full path to the local .xlsx file.
+        drive_folder_id: Google Drive folder ID or list of IDs for the
+            destination.
+
+    Returns:
+        The Google Drive file ID of the newly created file.
+    """
     # allow one folder id or list to be passed
     if isinstance(drive_folder_id, str):
         drive_folder_id = [drive_folder_id]
@@ -248,9 +304,21 @@ def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id)
     return uploaded_file_id
 
 
-def permission_to_drive_file(drive_service, drive_file_id, email_flag, email, permission_msg):
-    """ grant user permission to a google drive file.  optionally notify user with google generated email and custom
-    message"""
+def permission_to_drive_file(drive_service: Any, drive_file_id: str, email_flag: bool, email: str, permission_msg: str | None) -> None:
+    """Grant reader permission on a Google Drive file to one user.
+
+    Strips gmail '+' alias segments from the email before granting. Falls
+    back to sendNotificationEmail=True if the first attempt fails, then
+    shows a pyautobek alert if both attempts fail.
+
+    Args:
+        drive_service: Authenticated Google Drive API service resource.
+        drive_file_id: Google Drive file ID to grant permission on.
+        email_flag: Whether to send a Google notification email.
+        email: Email address of the user to receive reader access.
+        permission_msg: Custom message body for the notification email, or
+            None to omit a message.
+    """
     # use regex to remove all text between '+' and '@gmail' cause fails in permission grant
     email_clean = re.sub('\+[^>]+@gmail.com', '@gmail.com', email, flags=re.IGNORECASE)
     if email_clean != email:
@@ -300,8 +368,16 @@ def permission_to_drive_file(drive_service, drive_file_id, email_flag, email, pe
     a=1
 
 
-def upload_admin_report(drive_service, admin_report_to_upload):
-    """ upload admin report from local to google drive
+def upload_admin_report(drive_service: Any, admin_report_to_upload: str | Path) -> None:
+    """Upload the admin (ROV-wide) report to Google Drive and notify the Core group.
+
+    Deletes any existing Drive file with the same name in the admin folder
+    before uploading, then grants reader permission to every address in
+    CORE_EMAIL_LIST.
+
+    Args:
+        drive_service: Authenticated Google Drive API service resource.
+        admin_report_to_upload: Full path to the local admin .xlsx file.
     """
     # do the upload
     admin_report_to_upload = Path(admin_report_to_upload)
@@ -334,8 +410,22 @@ def upload_admin_report(drive_service, admin_report_to_upload):
         permission_to_drive_file(drive_service, uploaded_file_id, SEND_PERMISSION_EMAIL_FLAG, email, permission_msg)
 
 
-def get_google_file_or_folder_ids(drive_service, file_or_folder, folder_name, parent):
-    """ create list of all folder or file ids in parent which match name """
+def get_google_file_or_folder_ids(drive_service: Any, file_or_folder: str, folder_name: str, parent: str) -> list[str]:
+    """Return Drive IDs of all files or folders matching a name inside a parent.
+
+    Handles pagination automatically. Uses a mimeType comparison to
+    distinguish files from folders.
+
+    Args:
+        drive_service: Authenticated Google Drive API service resource.
+        file_or_folder: 'file' to search for non-folder items; 'folder' to
+            search for folders.
+        folder_name: Name of the item to search for.
+        parent: Google Drive ID of the parent folder to search within.
+
+    Returns:
+        List of Google Drive IDs matching the search criteria.
+    """
     if file_or_folder.lower() == 'folder':
         file_or_folder_compare = '='
     elif file_or_folder.lower() == 'file':
@@ -371,15 +461,27 @@ def get_google_file_or_folder_ids(drive_service, file_or_folder, folder_name, pa
     return id_list
 
 
-def delete_list_of_google_files(drive_service, file_id_list):
-    """ delete all fileids in list from Google drive """
+def delete_list_of_google_files(drive_service: Any, file_id_list: list[str]) -> None:
+    """Move a list of Google Drive items to the trash.
+
+    Args:
+        drive_service: Authenticated Google Drive API service resource.
+        file_id_list: Google Drive file or folder IDs to trash.
+    """
     for folderId in file_id_list:
         drive_service.files().update(fileId=folderId, body={'trashed': True}).execute()
         # trash instead of delete moves to trash; delete gone for good
 
 
-def create_google_services():
-    """ create and returns a Google service for drive and sheet so we can read from each """
+def create_google_services() -> tuple[Any, Any]:
+    """Create and return authenticated Google Drive and Sheets API service objects.
+
+    Calls get_creds() with the project SCOPES and credential paths from
+    ROOT_PATH.
+
+    Returns:
+        A (drive_service, sheet_service) tuple of authenticated API resources.
+    """
     creds = get_creds(SCOPES, cred_file='../credentials.json', cred_dir=ROOT_PATH, token_file='../token.json', token_dir=ROOT_PATH, always_create=False,
                       write_token=True)
     try:
@@ -391,8 +493,18 @@ def create_google_services():
     return drive_service, sheet_service
 
 
-def create_drive_subfolder(drive_service, folder_name, drive_folder_id):
-    """ create a subfolder on a google drive given the id of the parent """
+def create_drive_subfolder(drive_service: Any, folder_name: str, drive_folder_id: str | list[str]) -> str:
+    """Create a new subfolder on Google Drive and return its ID.
+
+    Args:
+        drive_service: Authenticated Google Drive API service resource.
+        folder_name: Name for the new subfolder.
+        drive_folder_id: Google Drive ID (or list of IDs) of the parent
+            folder.
+
+    Returns:
+        The Google Drive ID of the newly created subfolder.
+    """
     if isinstance(drive_folder_id, str):
         drive_folder_id = [drive_folder_id]
 
@@ -407,8 +519,19 @@ def create_drive_subfolder(drive_service, folder_name, drive_folder_id):
     return new_folder_id
 
 
-def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
-    """ upload all room reports in directory and send notification via Google sheet permission
+def upload_room_reports(drive_service: Any, str_dir_to_upload: str, organizer_email_list: list[list[str]]) -> None:
+    """Upload all room report .xlsx files from a local directory to Google Drive.
+
+    Deletes any existing Drive folder with the same name, creates a fresh
+    subfolder, uploads each .xlsx as a Google Sheet, and grants reader
+    permission to the matching organizer email for each room.
+
+    Args:
+        drive_service: Authenticated Google Drive API service resource.
+        str_dir_to_upload: Local directory path containing the room .xlsx
+            report files.
+        organizer_email_list: List of [org_name, email] pairs used to match
+            each report file to its organizer's email address.
     """
 
     report_dir_to_upload = Path(str_dir_to_upload)
@@ -473,8 +596,16 @@ def upload_room_reports(drive_service, str_dir_to_upload, organizer_email_list):
                 a=1
 
 
-def upload_files(drive_service):
-    """ upload report files from local drive to google drive and alert recipients via google permissions
+def upload_files(drive_service: Any) -> None:
+    """Interactively upload admin and/or room reports to Google Drive.
+
+    Prompts the user to confirm email message text, then offers separate
+    choices to upload the admin report and/or a room report directory. Reads
+    a Sincere all-users CSV to build the organizer email list for room
+    report permissions.
+
+    Args:
+        drive_service: Authenticated Google Drive API service resource.
     """
 
     choice = pyautobek.confirm(f"\nAre these email messages ok to use?\n\n"

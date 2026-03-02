@@ -45,8 +45,13 @@ setup_loguru("INFO", "DEBUG")
 
 logger.info(f"({ROOT_PATH=}")
 
-def main():
-    """ create Sincere reports and upload them """
+def main() -> None:
+    """Orchestrate Sincere report generation and Google Drive upload.
+
+    Prompts the user to download required Sincere data, then either creates
+    local Excel reports (admin-wide and per-room) or uploads previously
+    created reports to Google Drive with organizer permission notifications.
+    """
 
 
     logger.info(f"starting")

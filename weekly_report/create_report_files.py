@@ -1,3 +1,5 @@
+"""Orchestrate local creation of all Sincere summary Excel reports."""
+
 import os
 import shutil
 from pathlib import Path
@@ -21,8 +23,13 @@ from weekly_report.create_admin_report import create_admin_report
 from weekly_report.create_room_reports import create_room_reports
 
 
-def create_report_files():
-    """ produce all the spreadsheet reports locally"""
+def create_report_files() -> None:
+    """Produce all local Excel report files from user-selected Sincere data.
+
+    Prompts for weekly vs monthly format, input CSV files, and output
+    directories. Applies factory and org filters, derives sort dictionaries,
+    then delegates to create_admin_report() and create_room_reports().
+    """
 
     report_by = pyautobek.confirm("\n\n[W]eekly or [M]onthly report?", "Date Format", ["W", "M", 'Exit'])
     report_by = report_by.upper()
@@ -108,11 +115,22 @@ def create_report_files():
     level_dicts = {k.lower(): v for k, v in level_dicts.items()}
 
     # define multiindex_df_sorter function used to sort multiiindex output of groupby by dictionaries
-    def multiindex_df_sorter(level, default_level_dict={}):
+    def multiindex_df_sorter(level: pd.Index, default_level_dict: dict = {}) -> pd.Index:
     # def multiindex_df_sorter(level, default_level_dict={'_TOTAL': 999999}):
-        """ function for sorting a dataframe's multiindex using a dictionary for each level.  if name of index
-        (case-insensitive) field matches key in dict hardcoded as 'level_dicts' then dictionary is used,
-        otherwise index level is left as is via use of an empty dictionary.  """
+        """Map a MultiIndex level to sort-key values using a level-specific dictionary.
+
+        Looks up the level name (case-insensitive) in the outer-scope ``level_dicts``
+        dict. If a match is found the corresponding dict maps each index item to a
+        sort key; otherwise items sort as-is (empty dict fallback).
+
+        Args:
+            level: One level of a pandas MultiIndex to be sorted.
+            default_level_dict: Fallback mapping when the level name is not found
+                in ``level_dicts``. Defaults to {}.
+
+        Returns:
+            The level mapped to sort-key values.
+        """
         level_dict = level_dicts.get(level.name.lower(), default_level_dict)
         mapped_index = level.map(lambda index_item: level_dict.get(index_item, index_item))
         return mapped_index

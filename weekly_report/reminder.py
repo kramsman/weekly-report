@@ -1,7 +1,15 @@
+"""Pre-run reminder dialog for required Sincere data downloads."""
+
 from uvbekutils import pyautobek
 
 
-def reminder():
+def reminder() -> None:
+    """Display a reminder dialog listing the Sincere files to download before running.
+
+    Prompts the user to confirm they have downloaded the required Sincere
+    reports (address counts, address requests, and users). Exits the program
+    if the user selects 'Exit'.
+    """
     # Identify which VoterLetters files should be downloaded before starting
     if True:
         choice = pyautobek.confirm(

@@ -1,11 +1,24 @@
+"""Build a daily-requests line chart sheet in an Excel workbook."""
+
 import pandas as pd
 from loguru import logger
 
 from weekly_report.utils.utils import max_used_col
 
 
-def make_chart(writer, df, index_vars, sheet_name):
-    """ pivot sincere data by day/master then chart it """
+def make_chart(writer: pd.ExcelWriter, df: pd.DataFrame, index_vars: str | list[str], sheet_name: str) -> None:
+    """Write a daily-request pivot table and line chart to an Excel sheet.
+
+    Pivots the DataFrame by created_at date with index_vars as rows, drops
+    the All column, then overlays an openpyxl LineChart spanning the full
+    data range.
+
+    Args:
+        writer: The active Excel writer to write the sheet into.
+        df: Source Sincere request data.
+        index_vars: Column name(s) to use as the pivot table row index.
+        sheet_name: Name of the Excel sheet to write to.
+    """
 
     from openpyxl.chart import (
         LineChart,

@@ -1,4 +1,7 @@
+"""Read and clean the Sincere all-parent-campaigns-requests CSV export."""
+
 import datetime as dt
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -6,8 +9,21 @@ import pandas as pd
 from weekly_report.utils.utils import check_df_headers
 
 
-def read_sincere_request_file(input_file):
-    """ read the downloaded Sincere csv of requests and create df with all necessary variables"""
+def read_sincere_request_file(input_file: str | Path) -> pd.DataFrame:
+    """Read a Sincere requests CSV and return a cleaned, enriched DataFrame.
+
+    Validates column headers, normalises org and team name strings (replaces
+    /, ', and , characters), computes week-ending Sunday dates and month
+    period columns, fills missing team names with ' No Team', and derives
+    master_campaign and shortened parent_campaign_name fields.
+
+    Args:
+        input_file: Path to the Sincere all-parent-campaigns-requests CSV.
+
+    Returns:
+        Cleaned request data with additional derived columns including
+        data_week_ending, month, master_campaign, and election.
+    """
     request_df = pd.read_csv(input_file, na_filter=False)
 
     # request_df = request_df[request_df['org_name'].str.contains('Haar')]

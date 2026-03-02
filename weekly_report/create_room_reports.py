@@ -1,4 +1,6 @@
-import os
+"""Create per-room (org) Excel workbooks from Sincere request data."""
+
+  import os
 
 import pandas as pd
 from openpyxl.styles import Font
@@ -19,8 +21,21 @@ from weekly_report.make_pivot import make_pivot
 from weekly_report.constants import noteLines
 
 
-def create_room_reports(sincere_df, sincere_data_file, file_date, report_by, str_output_dir_rooms ):
-    """ create all the room reports """
+def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_date: str, report_by: str, str_output_dir_rooms: str) -> None:
+    """Write one Excel workbook per org containing Sincere request pivot tables.
+
+    Iterates over every unique org in sincere_df and produces an .xlsx file
+    with sheets for campaigns, team sums, teams with writers, request counts,
+    campaigns-by-team views, individual team sheets, and a Notes tab.
+
+    Args:
+        sincere_df: Filtered Sincere request data for all orgs.
+        sincere_data_file: Source CSV filename, written into sheet headers.
+        file_date: Date string from the input filename, e.g. '2024-08-01'.
+        report_by: 'W' for weekly column grouping or 'M' for monthly.
+        str_output_dir_rooms: Local directory path where output .xlsx files
+            are written (one file per org).
+    """
     report_by = report_by.upper()
     if report_by == 'M':
         report_var = "month"
