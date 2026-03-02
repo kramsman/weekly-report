@@ -9,7 +9,7 @@ from uvbekutils import pyautobek
 from uvbekutils import select_file
 from uvbekutils import select_file
 
-from weekly_report.__main__ import read_sincere_request_file
+from weekly_report.utils.read_sincere_request_file import read_sincere_request_file
 from weekly_report.constants import FACTORY_FILTER_STRING
 from weekly_report.constants import OUTPUT_DIR_ADMIN
 from weekly_report.constants import OUTPUT_DIR_ADMIN

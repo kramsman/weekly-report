@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from factory_and_campaign_subtotals import factory_and_campaign_subtotals
 

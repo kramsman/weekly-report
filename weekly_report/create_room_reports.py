@@ -9,13 +9,13 @@ from openpyxl.styles import Font
 from uvbekutils import autosize_xls_cols
 from uvbekutils import exit_yes
 
-from weekly_report.__main__ import make_pivot
-from weekly_report.__main__ import make_pivot
-from weekly_report.__main__ import make_pivot
-from weekly_report.__main__ import make_pivot
-from weekly_report.__main__ import make_pivot
-from weekly_report.__main__ import make_pivot
-from weekly_report.__main__ import make_pivot
+from weekly_report.make_pivot import make_pivot
+from weekly_report.make_pivot import make_pivot
+from weekly_report.make_pivot import make_pivot
+from weekly_report.make_pivot import make_pivot
+from weekly_report.make_pivot import make_pivot
+from weekly_report.make_pivot import make_pivot
+from weekly_report.make_pivot import make_pivot
 from weekly_report.constants import noteLines
 
 

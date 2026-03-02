@@ -35,6 +35,7 @@ Assign permissions to organizers which sends a Google notification """
 # TODO: add mapping email from organizer to requested email
 # TODO: add excluded email list to skip giving permission
 # TODO: format all numbers with commas
+# TODO: Only email if production in last time period/two weeks/month?
 
 # from datetime import datetime
 import datetime as dt
@@ -166,24 +167,24 @@ def get_creds_new():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if not os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if not os.path.exists('../token.json'):
+        creds = Credentials.from_authorized_user_file('../token.json', SCOPES)
         flow = InstalledAppFlow.from_client_secrets_file(
-            'credentials.json', SCOPES)
+            '../credentials.json', SCOPES)
         creds = flow.run_local_server(port=0)
 
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            os.remove('token.json')
+            os.remove('../token.json')
             creds.refresh(Request())
         # else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                '../credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
 
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open('../token.json', 'w') as token:
             token.write(creds.to_json())
     return creds
 
@@ -195,8 +196,8 @@ def get_creds(scopes):
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', scopes)
+    if os.path.exists('../token.json'):
+        creds = Credentials.from_authorized_user_file('../token.json', scopes)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -204,11 +205,11 @@ def get_creds(scopes):
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                '../credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
 
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open('../token.json', 'w') as token:
             token.write(creds.to_json())
     return creds
 
@@ -1182,10 +1183,10 @@ def main_program():
                        f"   Reports>\n"
                        f"   New Report>\n"
                        f"   All Parent Campaign Address Requests.\n\n"
-                       f"   Dates 1/1/22 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
+                       f"   Dates 1/1/23 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
                        f"2. Users (to assign google read permissions):\n"
-                       f"   Sincere Child Organizations>\n"
-                       f"   Export Users to CSV>\n\n\n"),
+                       f"   Reports>\n"
+                       f"   All Users>\n\n\n"),
                      ["Ok", "Exit"]
                     )
         if choice == "exit":

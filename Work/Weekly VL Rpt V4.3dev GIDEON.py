@@ -16,7 +16,7 @@ Assign permissions to organizers which sends a Google notification """
 # V4.2 split admin reports and room to functions
 # V4.3 replace pymsgbox with pysimplegui - include titles (which were lost in python v9+) and scrolling on boxes
 #   Use upload prompts to only prompt for admin file and userfile & directory
-#   Fixed assigning permissions to alternate gmails (with '+') by removing portion after +
+
 
 # Google cloud console for authorizations: https://console.cloud.google.com/home/dashboard?project=voterletters-reports,
 # then 'APi and Services' (upper left)>credentials.  +Create > Oauth > desktop
@@ -35,7 +35,6 @@ Assign permissions to organizers which sends a Google notification """
 # TODO: add mapping email from organizer to requested email
 # TODO: add excluded email list to skip giving permission
 # TODO: format all numbers with commas
-# TODO: Only email if production in last time period/two weeks/month?
 
 # from datetime import datetime
 import datetime as dt
@@ -62,7 +61,7 @@ import numpy as np
 import openpyxl
 import pandas as pd
 # import xlsxwriter
-# import pymsgbox
+import pymsgbox
 # from apiclient.http import MediaFileUpload  # needed even if Pycharm says not
 from googleapiclient.http import MediaFileUpload
 # from tkinter import messagebox
@@ -76,7 +75,6 @@ from googleapiclient.errors import HttpError
 from openpyxl.styles import Font
 import shutil
 import traceback
-import re
 
 # for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
@@ -92,20 +90,19 @@ SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
 
-CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-                   'Andrea@centerforcommonground.org',
-                   'dee@centerforcommonground.org',
-                   'comstockrov@gmail.com',
-                   'nancy@centerforcommonground.org',
-                   'bill.becky.rov@gmail.com',
-                   'carey@harmonicsystems.net',
-                   'gideon.asher1@gmail.com',
-                   'jake@centerforcommonground.org']
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+#                      'Andrea@centerforcommonground.org',
+#                      'dee@centerforcommonground.org',
+#                      'comstockrov@gmail.com',
+#                      'nancy@centerforcommonground.org',
+#                      'bill.becky.rov@gmail.com',
+#                      'carey@harmonicsystems.net',
+#                      'gideon.asher1@gmail.com',
+#                      'jake@centerforcommonground.org']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com']
-# CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
+CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
-# CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
 
 noteLines = [
@@ -167,24 +164,24 @@ def get_creds_new():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if not os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if not os.path.exists('../token.json'):
+        creds = Credentials.from_authorized_user_file('../token.json', SCOPES)
         flow = InstalledAppFlow.from_client_secrets_file(
-            'credentials.json', SCOPES)
+            '../credentials.json', SCOPES)
         creds = flow.run_local_server(port=0)
 
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            os.remove('token.json')
+            os.remove('../token.json')
             creds.refresh(Request())
         # else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                '../credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
 
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open('../token.json', 'w') as token:
             token.write(creds.to_json())
     return creds
 
@@ -196,8 +193,8 @@ def get_creds(scopes):
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', scopes)
+    if os.path.exists('../token.json'):
+        creds = Credentials.from_authorized_user_file('../token.json', scopes)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -205,11 +202,11 @@ def get_creds(scopes):
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                '../credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
 
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open('../token.json', 'w') as token:
             token.write(creds.to_json())
     return creds
 
@@ -874,18 +871,10 @@ def upload_sheet_to_drive(drive_service, file_to_upload_w_path, drive_folder_id)
 def permission_to_drive_file(drive_service, drive_file_id, email_flag, email, permission_msg):
     """ grant user permission to a google drive file.  optionally notify user with google generated email and custom
     message"""
-    # use regex to remove all text between '+' and '@gmail' cause fails in permission grant
-    email_clean = re.sub('\+[^>]+@gmail.com', '@gmail.com', email, flags=re.IGNORECASE)
-    if email_clean != email:
-        print(f"'{email}' changed to '{email_clean}' for permission grant.")
-        logging.getLogger(name='my_logger').info(f"In {inspect.stack()[0][3]} - '{email}' changed to '{email_clean}' "
-                                                 f"for permission grant.")
-
-
     payload = {
         "role": "reader",
         "type": "user",
-        "emailAddress": email_clean
+        "emailAddress": email
     }
 
     if not email_flag:
@@ -896,9 +885,10 @@ def permission_to_drive_file(drive_service, drive_file_id, email_flag, email, pe
         # If email is not gmail and doesn't have an associated gmail account, notification must be true, below
         drive_service.permissions().create(fileId=drive_file_id,
                                            supportsAllDrives=True,
-                                            sendNotificationEmail=email_flag,
-                                            emailMessage=permission_msg,
-                                            body=payload).execute()
+                                           # useDomainAdminAccess=True,
+                                        sendNotificationEmail=email_flag,
+                                       emailMessage=permission_msg,
+                                       body=payload).execute()
     except Exception as e:
         print('First Except', sys.exc_info()[2])
         traceback.print_exc()
@@ -1146,6 +1136,8 @@ def upload_files(drive_service):
         # do the upload from local to google sheets
         upload_room_reports(drive_service, str_report_dir_to_upload, organizer_email_list)
 
+    # TODO: for special gmail emails, kyoko+org@gmail.com, remove everything past the + for permission.
+
 
 def initialize():
     """  set up logger and if needed erase files, etc  """
@@ -1183,10 +1175,10 @@ def main_program():
                        f"   Reports>\n"
                        f"   New Report>\n"
                        f"   All Parent Campaign Address Requests.\n\n"
-                       f"   Dates 1/1/23 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
+                       f"   Dates 1/1/22 to prior Monday INCLUSIVE (includes to the day prior to specified).\n\n\n"
                        f"2. Users (to assign google read permissions):\n"
-                       f"   Reports>\n"
-                       f"   All Users>\n\n\n"),
+                       f"   Sincere Child Organizations>\n"
+                       f"   Export Users to CSV>\n\n\n"),
                      ["Ok", "Exit"]
                     )
         if choice == "exit":

@@ -1,30 +1,16 @@
 from pathlib import Path
-from pathlib import Path
 
 import pandas as pd
 from loguru import logger
-from loguru import logger
-from loguru import logger
-from loguru import logger
-from loguru import logger
-from loguru import logger
-from openpyxl.styles import Font
-from openpyxl.styles import Font
-from openpyxl.styles import Font
-from openpyxl.styles import Font
 from openpyxl.styles import Font
 from uvbekutils import autosize_xls_cols
 from uvbekutils import exit_yes
 
 from factory_and_campaign_subtotals import factory_and_campaign_subtotals
 from factory_and_campaign_subtotals import factory_and_campaign_subtotals
-from weekly_report.__main__ import df_to_sheet
-from weekly_report.__main__ import df_to_sheet
-from weekly_report.__main__ import make_chart
-from weekly_report.__main__ import make_pivot
-from weekly_report.__main__ import make_pivot
-from weekly_report.__main__ import make_pivot
-from weekly_report.constants import FACTORY_FILTER_STRING
+from weekly_report.utils.utils import df_to_sheet
+from weekly_report.make_chart import make_chart
+from weekly_report.make_pivot import make_pivot
 from weekly_report.constants import FACTORY_FILTER_STRING
 
 
