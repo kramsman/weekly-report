@@ -27,9 +27,10 @@ def make_pivot(*, writer: pd.ExcelWriter, df: pd.DataFrame, report_var: list[str
     df_pt = df_pt.sort_index(axis=1, ascending=False)
     if sheet_name == '':
         sheet_name = "No Team"
+
     logger.debug(f"{sheet_name=}")
+
     df_pt.to_excel(writer, sheet_name=sheet_name, startrow=6)
     ws = writer.sheets[sheet_name]
-    # ws.freeze_panes(freeze_row, freeze_col)
     mycell = ws[freeze_cell]
     ws.freeze_panes = mycell

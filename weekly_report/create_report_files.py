@@ -97,9 +97,6 @@ def create_report_files() -> None:
 
     file_date = Path(input_file).stem[-10:]
 
-    master_campaigns = sincere_df['master_campaign'].unique()
-    master_campaigns = sorted(master_campaigns)
-
     ## add dicts to 'level_dicts'; dict will be used for sort values for and dict name matching level name in multiindex
     ## working version to play can be found in sort df using dict.py
     level_dicts = dict()  # name of 'level_dicts' is hardcoded in sort function
@@ -109,8 +106,7 @@ def create_report_files() -> None:
     level_dicts = {k.lower(): v for k, v in level_dicts.items()}
 
     # define multiindex_df_sorter function used to sort multiiindex output of groupby by dictionaries
-    def multiindex_df_sorter(level: pd.Index, default_level_dict: dict = {}) -> pd.Index:
-    # def multiindex_df_sorter(level, default_level_dict={'_TOTAL': 999999}):
+    def multiindex_df_sorter(*, level: pd.Index, default_level_dict: dict = {}) -> pd.Index:
         """Map a MultiIndex level to sort-key values using a level-specific dictionary.
 
         Looks up the level name (case-insensitive) in the outer-scope ``level_dicts``
@@ -118,6 +114,7 @@ def create_report_files() -> None:
         sort key; otherwise items sort as-is (empty dict fallback).
 
         Args:
+            * ():
             level: One level of a pandas MultiIndex to be sorted.
             default_level_dict: Fallback mapping when the level name is not found
                 in ``level_dicts``. Defaults to {}.
@@ -125,6 +122,8 @@ def create_report_files() -> None:
         Returns:
             The level mapped to sort-key values.
         """
+        # def multiindex_df_sorter(level, default_level_dict={'_TOTAL': 999999}):
+
         level_dict = level_dicts.get(level.name.lower(), default_level_dict)
         mapped_index = level.map(lambda index_item: level_dict.get(index_item, index_item))
         return mapped_index
@@ -133,24 +132,22 @@ def create_report_files() -> None:
     admin_rpt_filename = f"ROVWide Sincere Summary {file_date}-{report_by}.xlsx"
     # create_admin_report(sincere_df, sincere_data_file_name, report_by, OUTPUT_DIR_ADMIN, admin_rpt_filename,
     #                     factory_csv)
-    create_admin_report(sincere_df, sincere_data_file_name, report_by, OUTPUT_DIR_ADMIN, admin_rpt_filename,
-                        factory_csv, multiindex_df_sorter)
+    create_admin_report(sincere_df=sincere_df, sincere_data_file=sincere_data_file_name, report_by=report_by,
+                        str_output_dir_admin=OUTPUT_DIR_ADMIN, admin_rpt_filename=admin_rpt_filename,
+                        factory_csv=factory_csv, df_sort_func=multiindex_df_sorter)
 
 
     # Base of report file; input file name is used to create a sub dir under this
     output_dir = os.path.expanduser(OUTPUT_DIR_REPORTS)
     output_dir_w_file = os.path.join(output_dir, Path(input_file).stem + "-" + report_by)
     # CHECK and create dir if not exists
-    # bad_path_create(output_dir_w_file)
-    # if not os.path.isdir(output_dir_w_file):
-    #     print(f"Adding Directory {output_dir_w_file}\n")
-    #     os.makedirs(output_dir_w_file)
     if os.path.isdir(output_dir_w_file):
         shutil.rmtree(output_dir_w_file)
         print(f"Removing directory {output_dir_w_file}\n")
     os.makedirs(output_dir_w_file)
     # Run reports at the room/org level
-    create_room_reports(sincere_df, sincere_data_file_name, file_date, report_by, output_dir_w_file)
+    create_room_reports(sincere_df=sincere_df, sincere_data_file=sincere_data_file_name, file_date=file_date,
+                        report_by=report_by, str_output_dir_rooms=output_dir_w_file)
 
     print("\nDone with all orgs.")
     pyautobek.alert(f"Org reports produced. In:"

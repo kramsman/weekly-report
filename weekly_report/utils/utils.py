@@ -38,13 +38,14 @@ def check_sheet_headers(ws: Worksheet, vals: list[tuple[str, str]]) -> None:
         chk_header_vals(ws, pairs[0], pairs[1])
 
 
-def check_df_headers(df: pd.DataFrame, vals: list[str]) -> None:
+def check_df_headers(*, df: pd.DataFrame, vals: list[str]) -> None:
     """Validate that a DataFrame's column names exactly match an expected list.
 
     Comparison is case- and whitespace-insensitive. Calls exit_yes() if the
     columns do not match.
 
     Args:
+        * ():
         df: The DataFrame whose columns are checked.
         vals: Expected column names in the required order.
     """

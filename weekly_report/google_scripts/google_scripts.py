@@ -548,14 +548,13 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str, organizer_em
     new_folder_id = create_drive_subfolder(drive_service, folder_name, ROOM_REPORT_FOLDER_ID)
 
     # get list of filenames in computer directory
-    excel_report_files_lst = glob.glob(str(report_dir_to_upload / '[!~]*.xlsx'))
     # xlsx files not starting with ~ (temporary files)
+    excel_report_files_lst = glob.glob(str(report_dir_to_upload / '[!~]*.xlsx'))
 
     report_files_df = pd.DataFrame(excel_report_files_lst, columns=['file_w_path'])
     report_files_df['file_name'] = report_files_df['file_w_path'].map(lambda x: os.path.basename(x))
     report_files_df['file_name_wo_ext'] = report_files_df['file_w_path'].map(lambda x: Path(x).stem)
     report_files_df['room_name'] = report_files_df['file_name_wo_ext'].map(lambda x: x.split(' Sincere ')[0])
-    # report_files_df['room_name'] = report_files_df['file_name_wo_ext'].map(lambda x: x[0:-34])
 
     report_files_df.sort_values(by=['room_name'], ascending=True, inplace=True)
 
@@ -576,19 +575,8 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str, organizer_em
                     permission_msg = None
                 elif file_name_wo_ext[-2:].lower() == '-m':
                     permission_msg = ORG_MONTHLY_MSG
-                    # permission_msg = ("A new MONTHLY VoterLetters summary report is available for your room. "
-                    #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                    #                   "Click to open.")
                 else:
                     permission_msg = ORG_WEEKLY_MSG
-                    # permission_msg = (f"A new WEEKLY VoterLetters summary report is available for your room. "
-                    #                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                    #                   f"Click to open.")
-
-                # print('  - Adding ROV-wide permission for email: ', email)
-                # logging.getLogger(name='my_logger').info(f"{inspect.stack()[0][3]} - Adding room permission for email: "
-                #     f"{email}")
-                # pymsgbox.confirm("Wait a bit and then try")
 
                 # TODO: Could excluding emails from upload be done here?
 

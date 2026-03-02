@@ -11,7 +11,8 @@ from weekly_report.constants import noteLines
 from weekly_report.make_pivot import make_pivot
 
 
-def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_date: str, report_by: str, str_output_dir_rooms: str) -> None:
+def create_room_reports(*, sincere_df: pd.DataFrame, sincere_data_file: str, file_date: str, report_by: str,
+                        str_output_dir_rooms: str) -> None:
     """Write one Excel workbook per org containing Sincere request pivot tables.
 
     Iterates over every unique org in sincere_df and produces an .xlsx file
@@ -19,6 +20,7 @@ def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_d
     campaigns-by-team views, individual team sheets, and a Notes tab.
 
     Args:
+        * ():
         sincere_df: Filtered Sincere request data for all orgs.
         sincere_data_file: Source CSV filename, written into sheet headers.
         file_date: Date string from the input filename, e.g. '2024-08-01'.
@@ -36,10 +38,6 @@ def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_d
 
     orgs = sorted(sincere_df['org_name'].unique(), reverse=True)
 
-    # master_campaigns = sincere_df['master_campaign'].unique()
-    # master_campaigns = sorted(master_campaigns)
-
-
     for org in orgs:
         print("Org: " + org)
         xlo = sincere_df[sincere_df['org_name'] == org]  # select records for one Org
@@ -49,26 +47,20 @@ def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_d
 
         excel_output_file = os.path.join(os.path.expanduser(str_output_dir_rooms),
                             org + " Sincere Summary " + file_date + "-" + report_by + ".xlsx")
-#    outputDirWFile = os.path.join(outputDir,Path(InputFile).stem + "-" + reportBy)
-
 
         teams = sorted(xlo['team_name'].unique())
 
         writer = pd.ExcelWriter(excel_output_file, engine='openpyxl')
 
         # pivot on campaigns
-        # make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], np.sum, 'Campaigns', 'C10')
-        # make_pivot(writer, xlo, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
         make_pivot(writer=writer, df=xlo, report_var=[report_var],
                    index_vars=['election', 'master_campaign', 'parent_campaign_name'], aggfunc='sum',
                    sheet_name='Campaigns', freeze_cell='D10')
 
         # pivot on writers/teams
-        # make_pivot(writer, xlo, [report_var], ['team_name'], np.sum, 'Team Sums', 'B10')
         make_pivot(writer=writer, df=xlo, report_var=[report_var], index_vars=['team_name'], aggfunc='sum',
                    sheet_name='Team Sums', freeze_cell='B10')
 
-        # make_pivot(writer, xlo, [report_var], ['team_name', 'writer_name'], np.sum, 'Teams w Writers', 'C10')
         make_pivot(writer=writer, df=xlo, report_var=[report_var], index_vars=['team_name', 'writer_name'],
                    aggfunc='sum', sheet_name='Teams w Writers', freeze_cell='C10')
 
@@ -78,15 +70,9 @@ def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_d
         # TODO: change var label on address_count to request_count
 
         # Meika's two reports - cols by campaign not date
-        # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], np.sum, 'Team by Campaigns', 'B11')
-        # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name'], 'sum', 'Team by Campaigns', 'B11')
         make_pivot(writer=writer, df=xlo, report_var=['election', 'master_campaign', 'parent_campaign_name'],
                    index_vars=['team_name'], aggfunc='sum', sheet_name='Team by Campaigns', freeze_cell='B11')
 
-        # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], np.sum,
-        #            'Teams w Writers by Campaign', 'B11')
-        # make_pivot(writer, xlo, ['master_campaign', 'parent_campaign_name'], ['team_name', 'writer_name'], 'sum',
-        #            'Teams w Writers by Campaign', 'B11')
         make_pivot(writer=writer, df=xlo, report_var=['election', 'master_campaign', 'parent_campaign_name'],
                    index_vars=['team_name', 'writer_name'], aggfunc='sum', sheet_name='Teams w Writers by Campaign',
                    freeze_cell='C11')
@@ -95,7 +81,6 @@ def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_d
         for team in teams:
             xlt = xlo[xlo['team_name'] == team]
             shname = team[:30]
-            # make_pivot(writer, xlt, [report_var], ['team_name', 'writer_name'], np.sum, shname, 'C10')
             make_pivot(writer=writer, df=xlt, report_var=[report_var], index_vars=['team_name', 'writer_name'],
                        aggfunc='sum', sheet_name=shname, freeze_cell='C10')
 
@@ -133,4 +118,3 @@ def create_room_reports(sincere_df: pd.DataFrame, sincere_data_file: str, file_d
             sh.sheet_view.tabSelected = False  # Deselects all via loop; defaults to index = 0 selected (active doesn't deselect any, only  activates!).
 
         writer.close()
-        # writer.save()

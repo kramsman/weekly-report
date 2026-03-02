@@ -16,15 +16,8 @@ from weekly_report.make_pivot import make_pivot
 from weekly_report.utils.utils import df_to_sheet
 
 
-def create_admin_report(
-        sincere_df: pd.DataFrame,
-        sincere_data_file: str,
-        report_by: str,
-        str_output_dir_admin: str,
-        admin_rpt_filename: str,
-        factory_csv: Path,
-        df_sort_func: Callable,
-) -> None:
+def create_admin_report(*, sincere_df: pd.DataFrame, sincere_data_file: str, report_by: str, str_output_dir_admin: str,
+                        admin_rpt_filename: str, factory_csv: Path, df_sort_func: Callable) -> None:
     """Create the ROV-wide admin Excel workbook with charts and pivot tables.
 
     Writes a daily-requests line chart, factory/campaign subtotal sheets,
@@ -32,6 +25,7 @@ def create_admin_report(
     widths are auto-sized and header titles are stamped on every sheet.
 
     Args:
+        * ():
         sincere_df: Filtered Sincere request data for all orgs and factories.
         sincere_data_file: Source CSV filename, used in sheet header notes,
             e.g. 'all-parent-campaigns-requests-2024-02-26.csv'.
@@ -44,7 +38,7 @@ def create_admin_report(
             used to sort factory/election subtotal DataFrames.
     """
 
-    print("Org: Enterprise wide")  # TODO: use logger instead of prints
+    logger.info("Core Report- Enterprise wide")
 
     report_by = report_by.upper()
     if report_by == 'M':
@@ -62,7 +56,7 @@ def create_admin_report(
 
     # create chart of daily requests
     logger.debug("calling make_chart")
-    make_chart(writer, sincere_df, 'factory_name', 'Chart')
+    make_chart(df=sincere_df, writer=writer, index_vars='factory_name', sheet_name='Chart')
 
     # Report on Masters only using sum w subtotals
     factory_tots, factory_pull_date = factory_and_campaign_subtotals(factory_csv, FACTORY_FILTER_STRING,
@@ -83,17 +77,14 @@ def create_admin_report(
 
     # Run pivot on Master without county campaigns
     logger.debug("calling make_pivot")
-    # make_pivot(writer, sincere_df, [report_var], ['master_campaign'], 'sum', 'Masters', 'B10')
     make_pivot(writer=writer, df=sincere_df, report_var=[report_var], index_vars=['election', 'master_campaign'],
                aggfunc='sum', sheet_name='Masters', freeze_cell='C10')
 
     # Run standalone pivot on campaigns
     logger.debug("calling make_pivot")
-    # make_pivot(writer, sincere_df, [report_var], ['master_campaign', 'parent_campaign_name'], 'sum', 'Campaigns', 'C10')
     make_pivot(writer=writer, df=sincere_df, report_var=[report_var],
                index_vars=['election', 'master_campaign', 'parent_campaign_name'], aggfunc='sum',
                sheet_name='Campaigns', freeze_cell='D10')
-
 
     logger.debug("calling make_pivot")
     make_pivot(writer=writer, df=sincere_df, report_var=[report_var], index_vars=['org_name'], aggfunc='sum',
@@ -101,7 +92,6 @@ def create_admin_report(
 
     wb = writer.book
 
-    # size columns before titles added because they are very wide
     for sh in wb.worksheets:
         autosize_xls_cols(sh)
 
@@ -130,5 +120,4 @@ def create_admin_report(
             sh['A5'].value = "Source: " + sincere_data_file
         sh['A5'].font = Font(size=12)
 
-    # writer.save()
     writer.close()

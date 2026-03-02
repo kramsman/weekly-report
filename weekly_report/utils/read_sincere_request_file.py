@@ -26,13 +26,11 @@ def read_sincere_request_file(input_file: str | Path) -> pd.DataFrame:
     """
     request_df = pd.read_csv(input_file, na_filter=False)
 
-    # request_df = request_df[request_df['org_name'].str.contains('Haar')]
-    # request_df.to_excel('request_df.xlsx', index=False)
-
     # Check heading fields in Sincere request file to ensure fields didn't move/change
-    check_df_headers(request_df,
-                     ['parent_campaign_id', 'parent_campaign_name', 'request_id', 'created_at', 'writer_name',
-                      'writer_email', 'addresses_count', 'org_name', 'org_id', 'team_name', 'factory_name', 'factory_id'])
+    check_df_headers(df=request_df,
+                     vals=['parent_campaign_id', 'parent_campaign_name', 'request_id', 'created_at', 'writer_name',
+                           'writer_email', 'addresses_count', 'org_name', 'org_id', 'team_name', 'factory_name',
+                           'factory_id'])
 
     # replace '/' in some input fields (like org name) which cause issues when used as directories
     request_df['org_name'] = request_df['org_name'].str.replace("/", "-").str.replace("'", "-").str.replace(",", "-")
@@ -50,13 +48,10 @@ def read_sincere_request_file(input_file: str | Path) -> pd.DataFrame:
     request_df['month'] = pd.to_datetime(request_df['date2']).dt.to_period('M')
 
     # request_df.fillna(" No Team", inplace = True) # note space in front for sorting # change to only replace one col
-    # ttt = request_df["team_name"].isnull() = " No Team"  # Fixme: THIS NEEDS FIXING
-    request_df['team_name'] = np.where(request_df['team_name'].isnull() == True, " No Team", request_df['team_name'])
-    request_df['team_name'] = request_df['team_name'].str.replace(":","-").str.replace("\\","-").str.replace("/","-")
+    request_df['team_name'] = np.where(request_df['team_name'] == "", " No Team", request_df['team_name'])
+    request_df['team_name'] = request_df['team_name'].str.replace(":", "-", regex=False).str.replace("\\", "-", regex=False).str.replace("/", "-", regex=False)
 
     request_df = request_df[~request_df['org_name'].isin(['ROV Test Silo', 'ROV Training Silo', 'ROV Sample Silo'])]  # select records for one Org
-    teams = sorted(request_df['team_name'].unique())
-
 
     request_df['master_campaign'] = np.where(request_df['factory_name'].isnull() == False, request_df['factory_name'],
                                      request_df['parent_campaign_name'].apply(lambda x: x[0:2]))
