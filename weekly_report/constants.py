@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 
+CREDS_DIR = "~/.config/weekly-report"
+
 ######################
 # WEEKLY messages
 ######################
@@ -37,19 +39,19 @@ ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your r
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                   "Click to open.")
 
-CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-                   'rovkatyhickman@gmail.com',
-                   'Andrea@centerforcommonground.org',
-                   'dee@centerforcommonground.org',
-                   'comstockrov@gmail.com',
-                   'nancy@centerforcommonground.org',
-                   'bill.becky.rov@gmail.com',
-                   'carey@harmonicsystems.net',
-                   'gideon.asher1@gmail.com',
-                   'gabriel@centerforcommonground.org',
-                   'josi@centerforcommonground.org',
-                   ]
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+#                    'rovkatyhickman@gmail.com',
+#                    'Andrea@centerforcommonground.org',
+#                    'dee@centerforcommonground.org',
+#                    'comstockrov@gmail.com',
+#                    'nancy@centerforcommonground.org',
+#                    'bill.becky.rov@gmail.com',
+#                    'carey@harmonicsystems.net',
+#                    'gideon.asher1@gmail.com',
+#                    'gabriel@centerforcommonground.org',
+#                    'josi@centerforcommonground.org',
+#                    ]
+CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']

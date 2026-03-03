@@ -16,8 +16,8 @@ Assign permissions to organizers which sends a Google notification.
 # TODO: writer errors assigning permissions to a file rather than pymsgboxes during run
 
 from weekly_report.create_report_files import create_report_files
-from weekly_report.google_scripts.google_scripts import create_google_services
-from weekly_report.google_scripts.google_scripts import upload_files
+from bekgoogle import create_google_services
+from weekly_report.upload_files import upload_files
 from weekly_report.reminder import reminder
 
 # FIXME below choked -
@@ -38,8 +38,22 @@ from loguru import logger
 # import google.auth.transport.requests
 from uvbekutils import setup_loguru
 from uvbekutils import pyautobek
-from constants import (
-    ROOT_PATH, )
+from weekly_report.constants import (
+    ROOT_PATH,
+    SCOPES,
+    CREDS_DIR,
+    ADMIN_REPORT_FOLDER_ID,
+    ROOM_REPORT_FOLDER_ID,
+    CORE_EMAIL_LIST,
+    SEND_PERMISSION_EMAIL_FLAG,
+    ORG_WEEKLY_MSG,
+    CORE_WEEKLY_MSG,
+    CORE_MONTHLY_MSG,
+    ORG_MONTHLY_MSG,
+    OUTPUT_DIR_ADMIN,
+    OUTPUT_DIR_REPORTS,
+    SINCERE_DOWNLOAD_DIR,
+)
 
 setup_loguru("INFO", "DEBUG")
 
@@ -56,7 +70,7 @@ def main() -> None:
 
     logger.info(f"starting")
 
-    drive_service, sheet_service = create_google_services()
+    drive_service, sheet_service = create_google_services(SCOPES, cred_dir=CREDS_DIR)
     logger.info("finished creating google services")
 
     # Identify which files should be downloaded before starting
@@ -81,7 +95,12 @@ def main() -> None:
         create_report_files()
 
     elif choice == "upload":
-        upload_files(drive_service)
+        upload_files(drive_service=drive_service, admin_folder_id=ADMIN_REPORT_FOLDER_ID,
+                     room_folder_id=ROOM_REPORT_FOLDER_ID, core_email_list=CORE_EMAIL_LIST,
+                     send_email_flag=SEND_PERMISSION_EMAIL_FLAG, org_weekly_msg=ORG_WEEKLY_MSG,
+                     core_weekly_msg=CORE_WEEKLY_MSG, core_monthly_msg=CORE_MONTHLY_MSG,
+                     org_monthly_msg=ORG_MONTHLY_MSG, output_dir_admin=OUTPUT_DIR_ADMIN,
+                     output_dir_reports=OUTPUT_DIR_REPORTS, sincere_download_dir=SINCERE_DOWNLOAD_DIR)
 
 
     logger.info(f"All done!")

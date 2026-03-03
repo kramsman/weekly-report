@@ -8,7 +8,9 @@ dependencies = [
     "google-api-python-client>=2.190.0",
     "google-auth-oauthlib>=1.2.4",
     "uvbekutils",
+    "bekgoogle",
 ]
 
 [tool.uv.sources]
 uvbekutils = { git = "https://github.com/kramsman/uvbekutils.git" }
+bekgoogle = { git = "https://github.com/kramsman/bekgoogle.git" }
