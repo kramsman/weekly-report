@@ -28,7 +28,7 @@ def make_pivot(*, writer: pd.ExcelWriter, df: pd.DataFrame, report_var: list[str
     if sheet_name == '':
         sheet_name = "No Team"
 
-    logger.debug(f"{sheet_name=}")
+    logger.trace(f"{sheet_name=}")
 
     df_pt.to_excel(writer, sheet_name=sheet_name, startrow=6)
     ws = writer.sheets[sheet_name]

@@ -7,10 +7,13 @@ dependencies = [
     "google>=3.0.0",
     "google-api-python-client>=2.190.0",
     "google-auth-oauthlib>=1.2.4",
-    "uvbekutils",
     "bekgoogle",
 ]
 
+# command run from comman line or in uvs is weekly-report and it will run
+# main in _run_report_.py
+[project.scripts]
+weekly-report = "weekly_report._run_report_:main"
+
 [tool.uv.sources]
-uvbekutils = { git = "https://github.com/kramsman/uvbekutils.git" }
 bekgoogle = { git = "https://github.com/kramsman/bekgoogle.git" }

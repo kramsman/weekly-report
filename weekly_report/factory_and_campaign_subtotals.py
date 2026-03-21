@@ -38,14 +38,18 @@ def factory_and_campaign_subtotals(factory_csv: str | Path | None = None, factor
     from datetime import datetime
     from loguru import logger
     from uvbekutils import sumby_w_totals
-    from uvbekutils import exit_yes, get_file_name
+    from uvbekutils import exit_yes, select_file
 
     if factory_csv is None:
-        factory_csv = get_file_name("Pick File",
-                                   f"Pick a parent-campaign file to summarize (eg "
+        factory_csv = select_file("Pick an Address Counts File",
+                                   SINCERE_DOWNLOAD_DIR,
+                                  "parent-campaign-address-counts*.csv",
+                                   ["Select", "Cancel"],
+                                  "file",
+                                  f"Pick a parent-campaign file to summarize (eg "
                                    f"'parent-campaign-address-counts-2023-08-03.csv'."
                                    f"\n\nCreate via ROV > Reports > New Report > Parent Campaign Address Counts",
-                                   SINCERE_DOWNLOAD_DIR)
+                                   )
     else:
         if 'parent-campaign-address-counts' not in str(factory_csv):
             exit_yes("File must have 'parent-campaign-address-counts' in the name", "WRONG FILE TYPE")

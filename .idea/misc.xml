@@ -3,7 +3,7 @@
   <component name="Black">
     <option name="sdkName" value="ROVgeneral" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="uv (WeeklyReport)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="uv (weekly-report) (2)" project-jdk-type="Python SDK" />
   <component name="PyPackaging">
     <option name="earlyReleasesAsUpgrades" value="true" />
   </component>

@@ -4,6 +4,7 @@ import inspect
 import logging
 from pathlib import Path
 from typing import Any
+from loguru import logger
 
 from bekgoogle.delete_list_of_google_files import delete_list_of_google_files
 from bekgoogle.get_google_file_or_folder_ids import get_google_file_or_folder_ids
@@ -56,6 +57,7 @@ def upload_admin_report(*, drive_service: Any, admin_report_to_upload: str | Pat
 
     for email in email_list:
         # print('  - Adding ROV-wide permission for email: ', email)
-        logging.getLogger(name='my_logger').info(f"{inspect.stack()[0][3]}  - Adding ROV-wide permission for email: "
-                                                 f"', {email}")
+        # logging.getLogger(name='my_logger').info(f"{inspect.stack()[0][3]}  - Adding ROV-wide permission for email: "
+        #                                          f"', {email}")
+        logger.debug(f"Adding ROV-wide permission for email: {email}")
         permission_to_drive_file(drive_service, uploaded_file_id, send_email_flag, email, permission_msg)

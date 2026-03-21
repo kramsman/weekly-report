@@ -4,6 +4,7 @@ import glob
 import os
 from pathlib import Path
 from typing import Any
+from loguru import logger
 
 import pandas as pd
 
@@ -82,5 +83,6 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str,
 
                 # TODO: Could excluding emails from upload be done here?
 
+                logger.debug(f"Adding organizer permission for org: {org}, email: {email}")
+
                 permission_to_drive_file(drive_service, uploaded_file_id, send_email_flag, email, permission_msg)
-                a=1

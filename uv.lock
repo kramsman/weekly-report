@@ -895,7 +895,6 @@ dependencies = [
     { name = "google" },
     { name = "google-api-python-client" },
     { name = "google-auth-oauthlib" },
-    { name = "uvbekutils" },
 ]
 
 [package.metadata]
@@ -904,7 +903,6 @@ requires-dist = [
     { name = "google", specifier = ">=3.0.0" },
     { name = "google-api-python-client", specifier = ">=2.190.0" },
     { name = "google-auth-oauthlib", specifier = ">=1.2.4" },
-    { name = "uvbekutils", git = "https://github.com/kramsman/uvbekutils.git" },
 ]
 
 [[package]]
