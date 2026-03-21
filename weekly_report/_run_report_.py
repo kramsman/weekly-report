@@ -25,6 +25,12 @@ Assign permissions to organizers which sends a Google notification.
 #   Where to add it: Since pyautobek.py is in your installed .venv, is there a source repo for uvbekutils you maintain? If so, you'd add a new function there —
 #   something like alert_with_file_link(msg, filepath, title). If not, you could add the function directly to the installed file or create a wrapper in your project.
 
+# run gitupdater to make sure bekutils and bekgoogle utility libraries are updated
+import sys
+import os
+sys.path.append(os.path.expanduser("~/Dropbox/Postcard Files/"))
+if True:
+    import gitupdater
 
 from weekly_report.create_report_files import create_report_files
 from bekgoogle import create_google_services
