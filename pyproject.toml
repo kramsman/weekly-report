@@ -10,7 +10,7 @@ dependencies = [
     "bekgoogle",
 ]
 
-# command run from comman line or in uvs is weekly-report and it will run
+# command run from comman line or in uvs is weekly-report-root and it will run
 # main in _run_report_.py
 [project.scripts]
 weekly-report = "weekly_report._run_report_:main"
