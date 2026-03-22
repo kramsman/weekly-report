@@ -12,6 +12,7 @@ from weekly_report.upload_room_reports import upload_room_reports
 
 
 def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: str, core_email_list: list[str],
+                 test_email_list: list[str],
                  send_email_flag: bool, org_weekly_msg: str, core_weekly_msg: str, core_monthly_msg: str,
                  org_monthly_msg: str, output_dir_admin: str, output_dir_reports: str, sincere_download_dir: str) -> None:
     """Interactively upload admin and/or room reports to Google Drive.
@@ -115,6 +116,17 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
         #     ['NY-NYC and Long Island', 'kramsman+nycorg@gmail.com'], ['NY-NYC and Long Island', 'bkramer@kramericore.com']
         # ]
 
+
+    if test_email_list:
+        choice = pyautobek.confirm(
+            f"TEST MODE: Permission emails will only be sent to:\n{test_email_list}\n\nContinue?",
+            "Test Mode Active",
+            ["Continue", "Exit"])
+        if choice == "exit":
+            exit()
+        core_email_list = [e for e in core_email_list if e in test_email_list]
+        if upload_room:
+            organizer_email_list = [[o, e] for o, e in organizer_email_list if e in test_email_list]
 
     if upload_admin:
         # do the upload from local to google sheets

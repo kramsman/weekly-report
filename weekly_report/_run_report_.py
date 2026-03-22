@@ -33,7 +33,7 @@ if True:
     import gitupdater
 
 from weekly_report.create_report_files import create_report_files
-from bekgoogle import create_google_services
+from bekgoogle import create_google_services_serviceaccount
 from weekly_report.upload_files import upload_files
 from weekly_report.reminder import reminder
 
@@ -58,10 +58,11 @@ from uvbekutils import pyautobek
 from weekly_report.constants import (
     ROOT_PATH,
     SCOPES,
-    CREDS_DIR,
+    SERVICE_ACCOUNT_FILE,
     ADMIN_REPORT_FOLDER_ID,
     ROOM_REPORT_FOLDER_ID,
     CORE_EMAIL_LIST,
+    TEST_EMAIL_LIST,
     SEND_PERMISSION_EMAIL_FLAG,
     ORG_WEEKLY_MSG,
     CORE_WEEKLY_MSG,
@@ -87,7 +88,7 @@ def main() -> None:
 
     logger.info(f"starting")
 
-    drive_service, sheet_service = create_google_services(SCOPES, cred_dir=CREDS_DIR)
+    drive_service, sheet_service = create_google_services_serviceaccount(SERVICE_ACCOUNT_FILE, SCOPES)
     logger.info("finished creating google services")
 
     # Identify which files should be downloaded before starting
@@ -114,6 +115,7 @@ def main() -> None:
     elif choice == "upload":
         upload_files(drive_service=drive_service, admin_folder_id=ADMIN_REPORT_FOLDER_ID,
                      room_folder_id=ROOM_REPORT_FOLDER_ID, core_email_list=CORE_EMAIL_LIST,
+                     test_email_list=TEST_EMAIL_LIST,
                      send_email_flag=SEND_PERMISSION_EMAIL_FLAG, org_weekly_msg=ORG_WEEKLY_MSG,
                      core_weekly_msg=CORE_WEEKLY_MSG, core_monthly_msg=CORE_MONTHLY_MSG,
                      org_monthly_msg=ORG_MONTHLY_MSG, output_dir_admin=OUTPUT_DIR_ADMIN,

@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 CREDS_DIR = "~/.config/weekly-report"
+SERVICE_ACCOUNT_FILE = Path("~/.config/weekly-report/service_account.json").expanduser()
 
 ######################
 # WEEKLY messages
@@ -38,6 +39,8 @@ ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your r
 # ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room, the last monthly for this campaign cycle.. "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                   "Click to open.")
+
+TEST_EMAIL_LIST = ['kramsman@yahoo.com']  # limit permission emails to these during testing; set to [] for production
 
 CORE_EMAIL_LIST = ['kramsman@yahoo.com',
                    'rovkatyhickman@gmail.com',
@@ -79,7 +82,7 @@ else:
 FACTORY_FILTER_STRING = '-2026'
 
 # for google drive api
-SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
+SEND_PERMISSION_EMAIL_FLAG = False  # send permission granted emails
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 # ROOM_REPORT_FOLDER_ID = "1OEAdTnhQoAKpyzFqYdM1ztr42vHAqbk5"  # Folder holding Sincere Organizer Reports
