@@ -113,6 +113,12 @@ def main() -> None:
         create_report_files()
 
     elif choice == "upload":
+        if TEST_EMAIL_LIST:
+            if pyautobek.confirm(
+                f"TEST MODE: Permission emails will only be sent to:\n{TEST_EMAIL_LIST}\n\nContinue?",
+                "Test Mode Active",
+                ["Continue", "Exit"]) == "exit":
+                exit()
         upload_files(drive_service=drive_service, admin_folder_id=ADMIN_REPORT_FOLDER_ID,
                      room_folder_id=ROOM_REPORT_FOLDER_ID, core_email_list=CORE_EMAIL_LIST,
                      test_email_list=TEST_EMAIL_LIST,

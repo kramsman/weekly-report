@@ -118,12 +118,6 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
 
 
     if test_email_list:
-        choice = pyautobek.confirm(
-            f"TEST MODE: Permission emails will only be sent to:\n{test_email_list}\n\nContinue?",
-            "Test Mode Active",
-            ["Continue", "Exit"])
-        if choice == "exit":
-            exit()
         core_email_list = [e for e in core_email_list if e in test_email_list]
         if upload_room:
             organizer_email_list = [[o, e] for o, e in organizer_email_list if e in test_email_list]

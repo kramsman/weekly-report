@@ -82,16 +82,18 @@ else:
 FACTORY_FILTER_STRING = '-2026'
 
 # for google drive api
-SEND_PERMISSION_EMAIL_FLAG = False  # send permission granted emails
+SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 # ROOM_REPORT_FOLDER_ID = "1OEAdTnhQoAKpyzFqYdM1ztr42vHAqbk5"  # Folder holding Sincere Organizer Reports
-ROOM_REPORT_FOLDER_ID = "1BcvXzwyEKGiiWSt27NLaassLE0DMgioP"  # 'VoterLetters Organizer Reports' copied to Tech@CFCG
+ROOM_REPORT_FOLDER_ID = "1KMRv2t156EDV9FJnrcfI3ERIA5I-xkWQ"  # 'VoterLetters Organizer Reports' Shared Drive
+# ROOM_REPORT_FOLDER_ID = "1BcvXzwyEKGiiWSt27NLaassLE0DMgioP"  # 'VoterLetters Organizer Reports' copied to Tech@CFCG
 # ADMIN_REPORT_FOLDER_ID = '1_vTXsMYOwK_TLYaRqC7YA_jolBuqDWP4'
 # ADMIN_REPORT_FOLDER_ID = '1uILHx5lllvFqYjpzzYI-9JtTivHRitdx'  # test move folder from CFTech to Tech@CFCG
 # ADMIN_REPORT_FOLDER_ID = '0AOkQpyahstHzUk9PVA'  # FAILED - would not give permission - share drive on Tech@CFCG
 # ADMIN_REPORT_FOLDER_ID = '1hyArqMhrgCJeRoN7tHR8Rmkzn4BvCmpq'  # WORKS - Tech@CFCG my drive folder (NOT share)
-ADMIN_REPORT_FOLDER_ID = '1PU8hcYfE3Vlh5v8Cq60Gup_8lfaFff4b'  # 'VoterLetters Admin Reports' copied to Tech@CFCG
+ADMIN_REPORT_FOLDER_ID = '1c56gF9kRzpGeK3lcrQJiG8LRvkPalcxg'  # 'VoterLetters Admin Reports' Shared Drive
+# ADMIN_REPORT_FOLDER_ID = '1PU8hcYfE3Vlh5v8Cq60Gup_8lfaFff4b'  # 'VoterLetters Admin Reports' copied to Tech@CFCG
 
 SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
