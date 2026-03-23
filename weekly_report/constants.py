@@ -2,62 +2,81 @@
 import sys
 from pathlib import Path
 
+# string to filter factories.  Can not filter for 'not locked' because that would exclude some current year closed
+# campaigns
+FACTORY_FILTER_STRING = '-2026'  # must contain so we only get this year's campaigns
+
 CREDS_DIR = "~/.config/weekly-report"
 SERVICE_ACCOUNT_FILE = Path("~/.config/weekly-report/service_account.json").expanduser()
 
+# SendGrid API key — stored in a local plain-text file, same pattern as service_account.json.
+# Each user places it once at this path. No login or browser popup needed.
+# Alternative: GCP Secret Manager — key stored centrally in one place; rotate it once and all
+# users get the new version automatically, no file to distribute. Requires enabling the
+# Secret Manager API in the GCP project and granting the service account the
+# secretmanager.secretAccessor role.
+SENDGRID_API_KEY_FILE = Path("~/.config/weekly-report/sendgrid_api_key.txt").expanduser()
+SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
+
 ######################
-# WEEKLY messages
+# WEEKLY messages and subjects
 ######################
 
-# ORG_WEEKLY_MSG = ("A new WEEKLY Sincere summary report, THE LAST WEEKLY UNTIL THE MIDTERMS IN MARCH.  "
+# ORG_WEEKLY_MSG = ("A new WEEKLY Sincere summary report is available for your room sent to the organizers below, THE LAST WEEKLY UNTIL THE MIDTERMS IN MARCH.  "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser.")
-# ORG_WEEKLY_MSG = ("The FINAL WEEKLY Sincere summary report is available for your room. "
+# ORG_WEEKLY_MSG = ("The FINAL WEEKLY Sincere summary report is available for your room sent to the organizers below. "
 #                         "IT IS THE LAST UNTIL THE MIDTERMS IN 2026."
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                         )
-ORG_WEEKLY_MSG = (f"A new WEEKLY Sincere summary report is available for your room. "
+ORG_WEEKLY_SUBJECT = "New Weekly Sincere Summary Report for"
+ORG_WEEKLY_MSG = (f"A new WEEKLY Sincere summary report is available for your room sent to the organizers below. "
                   f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                   f"Click to open.")
 
-# CORE_WEEKLY_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the CORE GROUP. "
+# CORE_WEEKLY_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the Postcard Team members below. "
 #                   f"Click to open.")
-# CORE_WEEKLY_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, THE LAST UNTIL THE MIDTERMS IN 2026.")
-CORE_WEEKLY_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+# CORE_WEEKLY_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below, THE LAST UNTIL THE MIDTERMS IN 2026.")
+CORE_WEEKLY_SUBJECT = "New Weekly All-Room Sincere Summary Report"
+CORE_WEEKLY_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below. "
                         "Click to open.")
 
 ######################
-# MONTHLY messages
+# MONTHLY messages and subjects
 ######################
-# CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP, the last monthly for this campaign cycle. "
+# CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below, the last monthly for this campaign cycle. "
 #                   f"Click to open.")
-CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
+CORE_MONTHLY_SUBJECT = "New Monthly All-Room Sincere Summary Report"
+CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below. "
                   f"Click to open.")
 
-ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room. "
+ORG_MONTHLY_SUBJECT = "New Monthly Sincere Summary Report for"
+ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room sent to the organizers below. "
                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
                   "Click to open.")
-# ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room, the last monthly for this campaign cycle.. "
+# ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room sent to the organizers below, the last monthly for this
+# campaign cycle.. "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                   "Click to open.")
 
 TEST_EMAIL_LIST = ['kramsman@yahoo.com']  # limit permission emails to these during testing; set to [] for production
+TEST_ROOM_LIMIT = 1  # max rooms to upload in test mode; set to 0 for production (no limit)
 
-CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-                   'rovkatyhickman@gmail.com',
-                   'Andrea@centerforcommonground.org',
-                   'dee@centerforcommonground.org',
-                   'comstockrov@gmail.com',
-                   'nancy@centerforcommonground.org',
-                   'bill.becky.rov@gmail.com',
-                   'carey@harmonicsystems.net',
-                   'gideon.asher1@gmail.com',
-                   'gabriel@centerforcommonground.org',
-                   'josi@centerforcommonground.org',
-                   ]
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+#                    'rovkatyhickman@gmail.com',
+#                    'Andrea@centerforcommonground.org',
+#                    'dee@centerforcommonground.org',
+#                    'comstockrov@gmail.com',
+#                    'nancy@centerforcommonground.org',
+#                    'bill.becky.rov@gmail.com',
+#                    'carey@harmonicsystems.net',
+#                    'gideon.asher1@gmail.com',
+#                    'gabriel@centerforcommonground.org',
+#                    'josi@centerforcommonground.org',
+#                    ]
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
-# CORE_EMAIL_LIST = ['test@test.com', 'bkramer@kramericore.com']
+CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'bkramer@kramericore.com']
 # CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
 
@@ -77,10 +96,6 @@ else:
     ROOT_PATH = None
 # ROOT_PATH = str(ROOT_PATH)
 
-# string to filter factories.  Can not filter for 'not locked' because that would exclude some current year closed
-# campaigns
-FACTORY_FILTER_STRING = '-2026'
-
 # for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -96,7 +111,7 @@ ADMIN_REPORT_FOLDER_ID = '1c56gF9kRzpGeK3lcrQJiG8LRvkPalcxg'  # 'VoterLetters Ad
 # ADMIN_REPORT_FOLDER_ID = '1PU8hcYfE3Vlh5v8Cq60Gup_8lfaFff4b'  # 'VoterLetters Admin Reports' copied to Tech@CFCG
 
 SINCERE_DOWNLOAD_DIR = "~/Downloads/"
-OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
+OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"  # folder where
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
 
 state_list = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN",

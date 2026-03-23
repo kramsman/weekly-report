@@ -8,6 +8,7 @@ dependencies = [
     "google-api-python-client>=2.190.0",
     "google-auth-oauthlib>=1.2.4",
     "bekgoogle",
+    "sendgrid>=6.12.5",
 ]
 
 # command run from comman line or in uvs is weekly-report-root and it will run

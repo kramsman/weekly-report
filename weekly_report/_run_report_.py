@@ -37,17 +37,6 @@ from bekgoogle import create_google_services_serviceaccount
 from weekly_report.upload_files import upload_files
 from weekly_report.reminder import reminder
 
-# FIXME below choked -
-if False:  # DOES NOT WORK AS PACKAGE this updates the uvbekutils package which contains the little helper programs
-    subprocess.run(["uv", "add", "uvbekutils", "--upgrade-package", "uvbekutils"], check=True)
-    # uv add uvbekutils --upgrade-package uvbekutils
-    #
-    # from terminal
-    # uv add uvbekutils@git+https://github.com/kramsman/uvbekutils.git
-    # subprocess.run(["uv", "add","uvbekutils@git+https://github.com/kramsman/uvbekutils.git@optiona_showbuttons"],
-    #                check=True)
-    # subprocess.run(["uv", "add", "uvbekutils", "--upgrade-package", "uvbekutils@optiona_showbuttons"], check=True)
-
 # from apiclient.discovery import build
 from loguru import logger
 
@@ -63,11 +52,18 @@ from weekly_report.constants import (
     ROOM_REPORT_FOLDER_ID,
     CORE_EMAIL_LIST,
     TEST_EMAIL_LIST,
+    TEST_ROOM_LIMIT,
     SEND_PERMISSION_EMAIL_FLAG,
+    SENDGRID_API_KEY_FILE,
+    SENDGRID_FROM_EMAIL,
     ORG_WEEKLY_MSG,
+    ORG_WEEKLY_SUBJECT,
     CORE_WEEKLY_MSG,
+    CORE_WEEKLY_SUBJECT,
     CORE_MONTHLY_MSG,
+    CORE_MONTHLY_SUBJECT,
     ORG_MONTHLY_MSG,
+    ORG_MONTHLY_SUBJECT,
     OUTPUT_DIR_ADMIN,
     OUTPUT_DIR_REPORTS,
     SINCERE_DOWNLOAD_DIR,
@@ -122,10 +118,15 @@ def main() -> None:
         upload_files(drive_service=drive_service, admin_folder_id=ADMIN_REPORT_FOLDER_ID,
                      room_folder_id=ROOM_REPORT_FOLDER_ID, core_email_list=CORE_EMAIL_LIST,
                      test_email_list=TEST_EMAIL_LIST,
-                     send_email_flag=SEND_PERMISSION_EMAIL_FLAG, org_weekly_msg=ORG_WEEKLY_MSG,
-                     core_weekly_msg=CORE_WEEKLY_MSG, core_monthly_msg=CORE_MONTHLY_MSG,
-                     org_monthly_msg=ORG_MONTHLY_MSG, output_dir_admin=OUTPUT_DIR_ADMIN,
-                     output_dir_reports=OUTPUT_DIR_REPORTS, sincere_download_dir=SINCERE_DOWNLOAD_DIR)
+                     test_room_limit=TEST_ROOM_LIMIT,
+                     send_email_flag=SEND_PERMISSION_EMAIL_FLAG,
+                     org_weekly_msg=ORG_WEEKLY_MSG, org_weekly_subject=ORG_WEEKLY_SUBJECT,
+                     core_weekly_msg=CORE_WEEKLY_MSG, core_weekly_subject=CORE_WEEKLY_SUBJECT,
+                     core_monthly_msg=CORE_MONTHLY_MSG, core_monthly_subject=CORE_MONTHLY_SUBJECT,
+                     org_monthly_msg=ORG_MONTHLY_MSG, org_monthly_subject=ORG_MONTHLY_SUBJECT,
+                     output_dir_admin=OUTPUT_DIR_ADMIN,
+                     output_dir_reports=OUTPUT_DIR_REPORTS, sincere_download_dir=SINCERE_DOWNLOAD_DIR,
+                     sendgrid_api_key_file=SENDGRID_API_KEY_FILE, sendgrid_from_email=SENDGRID_FROM_EMAIL)
 
 
     logger.info(f"All done!")

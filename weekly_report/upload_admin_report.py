@@ -10,11 +10,14 @@ from bekgoogle.delete_list_of_google_files import delete_list_of_google_files
 from bekgoogle.get_google_file_or_folder_ids import get_google_file_or_folder_ids
 from bekgoogle.permission_to_drive_file import permission_to_drive_file
 from bekgoogle.upload_sheet_to_drive import upload_sheet_to_drive
+from weekly_report.send_notification_email import send_drive_notification
 
 
 def upload_admin_report(*, drive_service: Any, admin_report_to_upload: str | Path, folder_id: str,
-                        email_list: list[str], send_email_flag: bool, weekly_msg: str | None,
-                        monthly_msg: str | None) -> None:
+                        email_list: list[str], send_email_flag: bool,
+                        weekly_msg: str | None, weekly_subject: str | None,
+                        monthly_msg: str | None, monthly_subject: str | None,
+                        sendgrid_api_key_file: Path, sendgrid_from_email: str) -> None:
     """Upload the admin (ROV-wide) report to Google Drive and notify the Core group.
 
     Deletes any existing Drive file with the same name in the admin folder
@@ -43,21 +46,19 @@ def upload_admin_report(*, drive_service: Any, admin_report_to_upload: str | Pat
     print('Uploading filename ', file_name_wo_ext)
     uploaded_file_id = upload_sheet_to_drive(drive_service, admin_report_to_upload, folder_id)
 
-    # set permissions and email admin report to Core group
-    if not send_email_flag:
-        permission_msg = None
-    elif file_name_wo_ext[-2:].lower() == '-m':
-        permission_msg = monthly_msg
-        # permission_msg = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-        #                   f"Click to open.")
+    # determine notification message based on report type
+    if file_name_wo_ext[-2:].lower() == '-m':
+        notification_msg = monthly_msg
+        notification_subject = monthly_subject
     else:
-        permission_msg = weekly_msg
-        # permission_msg = (f"A new WEEKLY ROV-WIDE Sincere summary report has been sent to the CORE GROUP. "
-        #                   f"Click to open.")
+        notification_msg = weekly_msg
+        notification_subject = weekly_subject
 
     for email in email_list:
-        # print('  - Adding ROV-wide permission for email: ', email)
-        # logging.getLogger(name='my_logger').info(f"{inspect.stack()[0][3]}  - Adding ROV-wide permission for email: "
-        #                                          f"', {email}")
         logger.debug(f"Adding ROV-wide permission for email: {email}")
-        permission_to_drive_file(drive_service, uploaded_file_id, send_email_flag, email, permission_msg)
+        # suppress Google's notification — SendGrid sends a custom email instead
+        permission_to_drive_file(drive_service, uploaded_file_id, False, email, None)
+        if send_email_flag and notification_msg:
+            send_drive_notification(email, uploaded_file_id, notification_msg, notification_subject,
+                                    sendgrid_from_email, sendgrid_api_key_file,
+                                    all_recipients=email_list)

@@ -7,14 +7,21 @@ import pandas as pd
 from uvbekutils import pyautobek
 from uvbekutils import select_file
 
+from loguru import logger
+
 from weekly_report.upload_admin_report import upload_admin_report
 from weekly_report.upload_room_reports import upload_room_reports
 
 
 def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: str, core_email_list: list[str],
-                 test_email_list: list[str],
-                 send_email_flag: bool, org_weekly_msg: str, core_weekly_msg: str, core_monthly_msg: str,
-                 org_monthly_msg: str, output_dir_admin: str, output_dir_reports: str, sincere_download_dir: str) -> None:
+                 test_email_list: list[str], test_room_limit: int,
+                 send_email_flag: bool,
+                 org_weekly_msg: str, org_weekly_subject: str,
+                 core_weekly_msg: str, core_weekly_subject: str,
+                 core_monthly_msg: str, core_monthly_subject: str,
+                 org_monthly_msg: str, org_monthly_subject: str,
+                 output_dir_admin: str, output_dir_reports: str, sincere_download_dir: str,
+                 sendgrid_api_key_file: Path, sendgrid_from_email: str) -> None:
     """Interactively upload admin and/or room reports to Google Drive.
 
     Prompts the user to confirm email message text, then offers separate
@@ -39,9 +46,13 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
     """
 
     choice = pyautobek.confirm(f"\nAre these email messages ok to use?\n\n"
+                      f"Org Weekly Subject: '{org_weekly_subject}'\n"
                       f"Org Weekly:\n'{org_weekly_msg}'\n\n"
+                      f"Admin Weekly Subject: '{core_weekly_subject}'\n"
                       f"Admin Weekly:\n'{core_weekly_msg}'\n\n"
+                      f"Admin Monthly Subject: '{core_monthly_subject}'\n"
                       f"Admin Monthly:\n'{core_monthly_msg}'\n\n"
+                      f"Org Monthly Subject: '{org_monthly_subject}'\n"
                       f"Org Monthly:\n'{org_monthly_msg}'\n\n"
                       f"Admin Email Addresses:\n{core_email_list}\n\n",
                       "Check Email Messages",   ['Yes', 'No'])
@@ -117,19 +128,27 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
         # ]
 
 
+    all_organizer_email_list = organizer_email_list if upload_room else None
     if test_email_list:
         core_email_list = [e for e in core_email_list if e in test_email_list]
-        if upload_room:
-            organizer_email_list = [[o, e] for o, e in organizer_email_list if e in test_email_list]
+        # organizer_email_list is NOT filtered — test_email_list is passed to upload_room_reports
+        # to override the actual organizer email for both permission and notification
 
     if upload_admin:
         # do the upload from local to google sheets
         upload_admin_report(drive_service=drive_service, admin_report_to_upload=str_admin_report_to_upload,
                             folder_id=admin_folder_id, email_list=core_email_list, send_email_flag=send_email_flag,
-                            weekly_msg=core_weekly_msg, monthly_msg=core_monthly_msg)
+                            weekly_msg=core_weekly_msg, weekly_subject=core_weekly_subject,
+                            monthly_msg=core_monthly_msg, monthly_subject=core_monthly_subject,
+                            sendgrid_api_key_file=sendgrid_api_key_file, sendgrid_from_email=sendgrid_from_email)
 
     if upload_room:
         # do the upload from local to google sheets
         upload_room_reports(drive_service, str_report_dir_to_upload, organizer_email_list,
                             folder_id=room_folder_id, send_email_flag=send_email_flag,
-                            weekly_msg=org_weekly_msg, monthly_msg=org_monthly_msg)
+                            weekly_msg=org_weekly_msg, weekly_subject=org_weekly_subject,
+                            monthly_msg=org_monthly_msg, monthly_subject=org_monthly_subject,
+                            sendgrid_api_key_file=sendgrid_api_key_file, sendgrid_from_email=sendgrid_from_email,
+                            test_room_limit=test_room_limit,
+                            test_email_list=test_email_list,
+                            all_organizer_email_list=all_organizer_email_list)
