@@ -11,7 +11,6 @@ Assign permissions to organizers which sends a Google notification.
 # TODO: add mapping email from organizer to requested email
 # TODO: add excluded email list to skip giving permission
 # TODO: format all numbers with commas
-# TODO: remove pymsgbox references
 
 # run gitupdater to make sure bekutils and bekgoogle utility libraries are updated
 import sys
