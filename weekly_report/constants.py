@@ -18,12 +18,11 @@ FACTORY_FILTER_STRING = '-2026'  # must contain so we only get this year's campa
 ORG_WEEKLY_SUBJECT = "New Weekly Sincere Summary Report for"
 ORG_WEEKLY_MSG = (
     f"Dear Organizer friend,"
-    f"\n\nA new WEEKLY Sincere summary report is available for your room sent to the organizers below. "
+    f"\n\nA new WEEKLY Sincere summary report is available for your room. "
     f"To access the sheet you will need to be logged in to Google.  "
     f"Do this by using the Chrome browser or by going to google.com in another browser. Click to open."
     f"\n\nThis report was sent to all organizers in the room, listed below."
     f"\n\nContact Brian at kramsman@yahoo.com with any questions"
-    f"google.com in another browser. Click to open."
 )
 
 # CORE_WEEKLY_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the Postcard Team members below. "
@@ -34,8 +33,6 @@ CORE_WEEKLY_MSG = (
     "Postcard Team,"
     "\n\nA new Weekly Admin Summary Report Covering All Rooms has been created and sent to the Postcard Team members below. "
     "Click to open."
-    "\n\nIf you look at the chart, VA is following the repeated pattern for address requests, the same as WI - a surge "
-    "in the beginning as organizerrs fill their rooms and then a tapering off."
     f"\n\nContact me at kramsman@yahoo.com with any questions"
 )
 
@@ -49,9 +46,12 @@ CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sen
                   f"Click to open.")
 
 ORG_MONTHLY_SUBJECT = "New Monthly Sincere Summary Report for"
-ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room sent to the organizers below. "
-                  "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                  "Click to open.")
+ORG_MONTHLY_MSG = (
+    "A new MONTHLY Sincere summary report is available for your room sent to the organizers below. "
+    "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser "
+    "or by going to google.com in another browser. "
+    "Click to open."
+)
 # ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your room sent to the organizers below, the last monthly for this
 # campaign cycle.. "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
@@ -69,22 +69,20 @@ ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your r
 #                    'gabriel@centerforcommonground.org',
 #                    'josi@centerforcommonground.org',
 #                    ]
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
-CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'bkramer@kramericore.com']
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'bkramer@kramericore.com']
 # CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
-
-CREDS_DIR = "~/.config/weekly-report"
+AUTHORIZATION_KEY_DIR = "~/.config/weekly-report"
 SERVICE_ACCOUNT_FILE = Path("~/.config/weekly-report/service_account.json").expanduser()
 
-# SendGrid API key — stored in a local plain-text file, same pattern as service_account.json.
+# Programmer note: SendGrid API key — stored in a local plain-text file, same pattern as service_account.json.
 # Each user places it once at this path. No login or browser popup needed.
-# Alternative: GCP Secret Manager — key stored centrally in one place; rotate it once and all
+# Alternative: could use a GCP Secret Manager — key stored centrally in one place; rotate it once and all
 # users get the new version automatically, no file to distribute. Requires enabling the
-# Secret Manager API in the GCP project and granting the service account the
-# secretmanager.secretAccessor role.
+# Secret Manager API in the GCP project and granting the service account the secretmanager.secretAccessor role.
 SENDGRID_API_KEY_FILE = Path("~/.config/weekly-report/sendgrid_api_key.txt").expanduser()
 SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
 
@@ -99,7 +97,6 @@ elif __file__:
 else:
     ROOT_PATH = None
 
-# for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
 SCOPES = ['https://www.googleapis.com/auth/drive']
 

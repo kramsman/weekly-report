@@ -1058,8 +1058,8 @@ wheels = [
 
 [[package]]
 name = "uvbekutils"
-version = "0.2.0"
-source = { git = "https://github.com/kramsman/uvbekutils.git#01516846cd95e6cfbcf730ee908771bf4a24b3e0" }
+version = "0.4.0"
+source = { git = "https://github.com/kramsman/uvbekutils.git#a6943c3e77cb0da6d4cf8f2962310aaab0f121f4" }
 dependencies = [
     { name = "loguru" },
     { name = "numpy" },

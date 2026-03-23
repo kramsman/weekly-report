@@ -36,7 +36,7 @@ def send_drive_notification(to_email: str, file_id: str, message: str, subject: 
         from_email=from_email,
         to_emails=to_email,
         subject=subject,
-        html_content=f"<p>{message}</p><p><a href='{file_url}'>Click here to open the report</a></p>{recipients_note}",
+        html_content=f"<p>{message.replace('\n', '<br>')}</p><p><a href='{file_url}'>Click here to open the report</a></p>{recipients_note}",
     )
 
     sg = sendgrid.SendGridAPIClient(api_key=api_key)

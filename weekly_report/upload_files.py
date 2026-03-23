@@ -45,17 +45,17 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
         sincere_download_dir: Local directory containing Sincere CSV exports.
     """
 
-    choice = pyautobek.confirm(f"\nAre these email messages ok to use?\n\n"
-                      f"Org Weekly Subject: '{org_weekly_subject}'\n"
-                      f"Org Weekly:\n'{org_weekly_msg}'\n\n"
-                      f"Admin Weekly Subject: '{core_weekly_subject}'\n"
-                      f"Admin Weekly:\n'{core_weekly_msg}'\n\n"
-                      f"Admin Monthly Subject: '{core_monthly_subject}'\n"
-                      f"Admin Monthly:\n'{core_monthly_msg}'\n\n"
-                      f"Org Monthly Subject: '{org_monthly_subject}'\n"
-                      f"Org Monthly:\n'{org_monthly_msg}'\n\n"
-                      f"Admin Email Addresses:\n{core_email_list}\n\n",
-                      "Check Email Messages",   ['Yes', 'No'])
+    choice = pyautobek.confirm(
+                      f">> Org Weekly Subject: '{org_weekly_subject}'\n\n"
+                      f">> Org Weekly:\n{org_weekly_msg}\n\n\n"
+                      f">> Admin Weekly Subject: '{core_weekly_subject}'\n\n"
+                      f">> Admin Weekly:\n{core_weekly_msg}\n\n\n"
+                      f">> Org Monthly Subject: '{org_monthly_subject}'\n\n"
+                      f">> Org Monthly:\n{org_monthly_msg}\n\n\n"
+                      f">> Admin Monthly Subject: '{core_monthly_subject}'\n\n"
+                      f">> Admin Monthly:\n{core_monthly_msg}\n\n\n"
+                      f">> Admin Email Addresses:\n{core_email_list}\n\n\n",
+                      "Check Email Content",   ['Yes', 'No'])
     if choice == "no":
         exit()
 
@@ -81,13 +81,11 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
                                           "Reports/TEST ROVWide Sincere Summary 2023-03-14-W.xlsx"
 
 
-    # choice = pymsgbox.confirm("Upload room reports?", "Upload Room Reports?", ['Yes', 'No'])
     choice = pyautobek.confirm("\n\nUpload Room Reports?", "Upload room reports?", ['Yes', 'No'])
     upload_room = False
     if choice == "yes":
         upload_room = True
         if True:  # False for testing w report directory hardcoded file
-            # pymsgbox.alert("Select report directory to UPLOAD")
             str_report_dir_to_upload = select_file("Select a REPORT DIRECTORY to upload",
                                                     output_dir_reports,
                                                    'all-parent-campaigns-requests*',
@@ -120,13 +118,6 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
         df = df.sort_values(['organization', 'name'], ascending=(True, True))
         organizer_email_list = df.loc[(df['role'].isin(['organizer']) & (df['is_active'])),
                                        ['organization', 'email']].values.tolist()
-
-        # TODO: Could excluding emails from upload be done here?
-
-        # organizer_email_list = [
-        #     ['NY-NYC and Long Island', 'kramsman+nycorg@gmail.com'], ['NY-NYC and Long Island', 'bkramer@kramericore.com']
-        # ]
-
 
     all_organizer_email_list = organizer_email_list if upload_room else None
     if test_email_list:
