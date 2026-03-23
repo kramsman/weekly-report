@@ -13,6 +13,7 @@ from bekgoogle.delete_list_of_google_files import delete_list_of_google_files
 from bekgoogle.get_google_file_or_folder_ids import get_google_file_or_folder_ids
 from bekgoogle.permission_to_drive_file import permission_to_drive_file
 from bekgoogle.upload_sheet_to_drive import upload_sheet_to_drive
+from weekly_report.constants import ERROR_LOG_FILE
 from weekly_report.send_notification_email import send_drive_notification
 
 
@@ -47,7 +48,6 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str,
     folder_name = report_dir_to_upload.parts[-1]  # the last section of the path # TODO change to better function than parts
 
     # id list of folders to trash(delete)
-    # delete_folder_list1 = get_google_folder_ids(drive_service, folder_name, folder_id)
     delete_folder_list = get_google_file_or_folder_ids(drive_service, 'folder', folder_name,
                                                              folder_id)
     # TODO maybe combine delete folder and file and delete_list_of_google_files
@@ -73,7 +73,6 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str,
             logger.info(f"TEST MODE: room limit of {test_room_limit} reached, stopping")
             break
         file_w_path, file_name, file_name_wo_ext, room_name = row
-        # # assign report_files_df row to variables to avoid report_files_df(loc,'field') notation
         print(f"\nUploading filename:  {file_name}, room_name: {room_name}")
 
         if test_room_limit and all_organizer_email_list:
@@ -95,22 +94,36 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str,
             # test mode: send to test addresses regardless of organizer match
             logger.debug(f"TEST MODE: granting permission for room: {room_name}, email(s): {test_email_list}")
             for perm_email in test_email_list:
-                permission_to_drive_file(drive_service, uploaded_file_id, False, perm_email, None)
+                try:
+                    permission_to_drive_file(drive_service, uploaded_file_id, False, perm_email, None)
+                except Exception as e:
+                    logger.error(f"Permission failed: room: {room_name}, email: {perm_email}: {e}")
+                    with open(ERROR_LOG_FILE, 'a') as f:
+                        f.write(f"PERMISSION ERROR: room: {room_name}, email: {perm_email}, error: {e}\n")
                 if send_email_flag and notification_msg:
                     send_drive_notification(perm_email, uploaded_file_id, notification_msg,
                                             f"{notification_subject} — {room_name}",
                                             sendgrid_from_email, sendgrid_api_key_file,
-                                            all_recipients=test_email_list)
+                                            all_recipients=test_email_list,
+                                            error_log_file=ERROR_LOG_FILE,
+                                            error_context=room_name)
         else:
             for org, email in organizer_email_list:
                 if org.replace(",", "-") == room_name:  # had to replace , with - in file names so this makes room match.
                     print(f"  - Adding permission for room_name: {room_name}, email: {email}")
                     logger.debug(f"Adding organizer permission for org: {org}, email: {email}")
-                    permission_to_drive_file(drive_service, uploaded_file_id, False, email, None)
+                    try:
+                        permission_to_drive_file(drive_service, uploaded_file_id, False, email, None)
+                    except Exception as e:
+                        logger.error(f"Permission failed: room: {room_name}, email: {email}: {e}")
+                        with open(ERROR_LOG_FILE, 'a') as f:
+                            f.write(f"PERMISSION ERROR: room: {room_name}, email: {email}, error: {e}\n")
                     if send_email_flag and notification_msg:
                         send_drive_notification(email, uploaded_file_id, notification_msg,
                                                 f"{notification_subject} — {room_name}",
                                                 sendgrid_from_email, sendgrid_api_key_file,
-                                                all_recipients=[email])
+                                                all_recipients=[email],
+                                                error_log_file=ERROR_LOG_FILE,
+                                                error_context=room_name)
 
         rooms_processed += 1

@@ -85,6 +85,7 @@ SERVICE_ACCOUNT_FILE = Path("~/.config/weekly-report/service_account.json").expa
 # Secret Manager API in the GCP project and granting the service account the secretmanager.secretAccessor role.
 SENDGRID_API_KEY_FILE = Path("~/.config/weekly-report/sendgrid_api_key.txt").expanduser()
 SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
+ERROR_LOG_FILE = Path("~/Dropbox/Postcard Files/VL upload_errors.txt").expanduser()
 
 # determine if application is running as a script file or frozen exe
 if getattr(sys, 'frozen', False):

@@ -13,7 +13,9 @@ from loguru import logger
 
 def send_drive_notification(to_email: str, file_id: str, message: str, subject: str,
                             from_email: str, api_key_file: Path,
-                            all_recipients: list[str] | None = None) -> None:
+                            all_recipients: list[str] | None = None,
+                            error_log_file: Path | None = None,
+                            error_context: str | None = None) -> None:
     """Send a Drive file notification email via SendGrid.
 
     Args:
@@ -24,6 +26,7 @@ def send_drive_notification(to_email: str, file_id: str, message: str, subject: 
         from_email: Sender email address (must be verified in SendGrid).
         api_key_file: Path to the plain-text file containing the SendGrid API key.
         all_recipients: Optional list of all addresses receiving this report (shown in email body).
+        error_log_file: Optional path to append errors to instead of showing a popup.
     """
     api_key = Path(api_key_file).read_text().strip()
     file_url = f"https://docs.google.com/spreadsheets/d/{file_id}"
@@ -36,7 +39,7 @@ def send_drive_notification(to_email: str, file_id: str, message: str, subject: 
         from_email=from_email,
         to_emails=to_email,
         subject=subject,
-        html_content=f"<p>{message.replace('\n', '<br>')}</p><p><a href='{file_url}'>Click here to open the report</a></p>{recipients_note}",
+        html_content=f"<p>{message.replace(chr(10), '<br>')}</p><p><a href='{file_url}'>Click here to open the report</a></p>{recipients_note}",
     )
 
     sg = sendgrid.SendGridAPIClient(api_key=api_key)
@@ -45,3 +48,7 @@ def send_drive_notification(to_email: str, file_id: str, message: str, subject: 
         logger.info(f"Email sent: {subject} → {to_email} (status {response.status_code})")
     except Exception as e:
         logger.error(f"SendGrid failed: {subject} → {to_email}: {e}")
+        if error_log_file:
+            context_str = f"room: {error_context}, " if error_context else ""
+            with open(error_log_file, 'a') as f:
+                f.write(f"EMAIL ERROR: {context_str}email: {to_email}, subject: {subject}, error: {e}\n")

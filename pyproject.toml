@@ -18,3 +18,13 @@ weekly-report = "weekly_report._run_report_:main"
 
 [tool.uv.sources]
 bekgoogle = { git = "https://github.com/kramsman/bekgoogle.git" }
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests (may call external services)",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]

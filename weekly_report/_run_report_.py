@@ -12,18 +12,6 @@ Assign permissions to organizers which sends a Google notification.
 # TODO: add excluded email list to skip giving permission
 # TODO: format all numbers with commas
 # TODO: remove pymsgbox references
-# TODO when permission can't be granted on google sheet (recipient blocked) log msg and error to log file
-# TODO: writer errors assigning permissions to a file rather than pymsgboxes during run
-
-# TODO: add link to error files it's definitely possible with PySide6. Since pyautobek.py uses QLabel, you can use HTML links in the label text combined with the linkActivated signal to
-#   open the file in the default editor.
-#   The pattern would be:
-#   label = QLabel(f'Error saved to: <a href="{filepath}">{filepath}</a>')
-#   label.setOpenExternalLinks(False)
-#   label.linkActivated.connect(lambda url: subprocess.run(['open', url]))  # macOS
-#   On macOS, open filepath.txt opens it in the default app (TextEdit or whatever is set). If you want a specific editor like VS Code: ['code', url].
-#   Where to add it: Since pyautobek.py is in your installed .venv, is there a source repo for uvbekutils you maintain? If so, you'd add a new function there —
-#   something like alert_with_file_link(msg, filepath, title). If not, you could add the function directly to the installed file or create a wrapper in your project.
 
 # run gitupdater to make sure bekutils and bekgoogle utility libraries are updated
 import sys
@@ -67,6 +55,7 @@ from weekly_report.constants import (
     OUTPUT_DIR_ADMIN,
     OUTPUT_DIR_REPORTS,
     SINCERE_DOWNLOAD_DIR,
+    ERROR_LOG_FILE,
 )
 
 setup_loguru("INFO", "DEBUG")
@@ -115,6 +104,9 @@ def main() -> None:
                 "Test Mode Active",
                 ["Continue", "Exit"]) == "exit":
                 exit()
+        # clear any error log from a previous run
+        if ERROR_LOG_FILE.exists():
+            ERROR_LOG_FILE.unlink()
         upload_files(drive_service=drive_service, admin_folder_id=ADMIN_REPORT_FOLDER_ID,
                      room_folder_id=ROOM_REPORT_FOLDER_ID, core_email_list=CORE_EMAIL_LIST,
                      test_email_list=TEST_EMAIL_LIST,
@@ -127,6 +119,9 @@ def main() -> None:
                      output_dir_admin=OUTPUT_DIR_ADMIN,
                      output_dir_reports=OUTPUT_DIR_REPORTS, sincere_download_dir=SINCERE_DOWNLOAD_DIR,
                      sendgrid_api_key_file=SENDGRID_API_KEY_FILE, sendgrid_from_email=SENDGRID_FROM_EMAIL)
+        if ERROR_LOG_FILE.exists():
+            pyautobek.alert_with_file_link("Errors occurred during upload. See details:",
+                                           ERROR_LOG_FILE, "Upload Errors")
 
 
     logger.info(f"All done!")

@@ -10,6 +10,7 @@ from bekgoogle.delete_list_of_google_files import delete_list_of_google_files
 from bekgoogle.get_google_file_or_folder_ids import get_google_file_or_folder_ids
 from bekgoogle.permission_to_drive_file import permission_to_drive_file
 from bekgoogle.upload_sheet_to_drive import upload_sheet_to_drive
+from weekly_report.constants import ERROR_LOG_FILE
 from weekly_report.send_notification_email import send_drive_notification
 
 
@@ -39,7 +40,6 @@ def upload_admin_report(*, drive_service: Any, admin_report_to_upload: str | Pat
     file_name_wo_ext = Path(admin_report_to_upload).stem  # filename without extension
 
     # delete all files with same name in the destination admin folder
-    # delete_file_list1 = get_google_file_ids(drive_service, file_name_wo_ext, folder_id)
     delete_file_list = get_google_file_or_folder_ids(drive_service, 'file', file_name_wo_ext, folder_id)
     delete_list_of_google_files(drive_service, delete_file_list)
 
@@ -57,8 +57,14 @@ def upload_admin_report(*, drive_service: Any, admin_report_to_upload: str | Pat
     for email in email_list:
         logger.debug(f"Adding ROV-wide permission for email: {email}")
         # suppress Google's notification — SendGrid sends a custom email instead
-        permission_to_drive_file(drive_service, uploaded_file_id, False, email, None)
+        try:
+            permission_to_drive_file(drive_service, uploaded_file_id, False, email, None)
+        except Exception as e:
+            logger.error(f"Permission failed: email: {email}: {e}")
+            with open(ERROR_LOG_FILE, 'a') as f:
+                f.write(f"PERMISSION ERROR: email: {email}, error: {e}\n")
         if send_email_flag and notification_msg:
             send_drive_notification(email, uploaded_file_id, notification_msg, notification_subject,
                                     sendgrid_from_email, sendgrid_api_key_file,
-                                    all_recipients=email_list)
+                                    all_recipients=email_list,
+                                    error_log_file=ERROR_LOG_FILE)
