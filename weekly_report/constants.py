@@ -57,19 +57,19 @@ ORG_MONTHLY_MSG = (
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                   "Click to open.")
 
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-#                    'rovkatyhickman@gmail.com',
-#                    'Andrea@centerforcommonground.org',
-#                    'dee@centerforcommonground.org',
-#                    'comstockrov@gmail.com',
-#                    'nancy@centerforcommonground.org',
-#                    'bill.becky.rov@gmail.com',
-#                    'carey@harmonicsystems.net',
-#                    'gideon.asher1@gmail.com',
-#                    'gabriel@centerforcommonground.org',
-#                    'josi@centerforcommonground.org',
-#                    ]
-CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+                   'rovkatyhickman@gmail.com',
+                   'Andrea@centerforcommonground.org',
+                   'dee@centerforcommonground.org',
+                   'comstockrov@gmail.com',
+                   'nancy@centerforcommonground.org',
+                   'bill.becky.rov@gmail.com',
+                   'carey@harmonicsystems.net',
+                   'gideon.asher1@gmail.com',
+                   'gabriel@centerforcommonground.org',
+                   'josi@centerforcommonground.org',
+                   ]
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'bkramer@kramericore.com']
@@ -117,13 +117,14 @@ SINCERE_DOWNLOAD_DIR = "~/Downloads/"
 OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
 
-state_list = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN",
-              "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM",
-              "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
-              "VI", "WA", "WV", "WI", "WY"]
+# state_list = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN",
+#               "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM",
+#               "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
+#               "VI", "WA", "WV", "WI", "WY"]
 
-TEST_EMAIL_LIST = ['kramsman@yahoo.com']  # limit permission emails to these during testing; set to [] for production
-TEST_ROOM_LIMIT = 1  # max rooms to upload in test mode; set to 0 for production (no limit)
+# TEST_EMAIL_LIST = []  # limit permission emails to these during testing; set to [] for production
+TEST_EMAIL_LIST = ['kramsman@yahoo.com']
+TEST_ROOM_LIMIT = 1  # max rooms to upload; set to 0 for production (no limit)
 
 noteLines = [
     '',
