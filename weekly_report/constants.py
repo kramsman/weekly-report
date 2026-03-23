@@ -2,26 +2,13 @@
 import sys
 from pathlib import Path
 
-# string to filter factories.  Can not filter for 'not locked' because that would exclude some current year closed
-# campaigns
+# string to filter factories in current year.
+# Can not filter for 'not locked' because that would exclude some current year closed campaigns
 FACTORY_FILTER_STRING = '-2026'  # must contain so we only get this year's campaigns
-
-CREDS_DIR = "~/.config/weekly-report"
-SERVICE_ACCOUNT_FILE = Path("~/.config/weekly-report/service_account.json").expanduser()
-
-# SendGrid API key — stored in a local plain-text file, same pattern as service_account.json.
-# Each user places it once at this path. No login or browser popup needed.
-# Alternative: GCP Secret Manager — key stored centrally in one place; rotate it once and all
-# users get the new version automatically, no file to distribute. Requires enabling the
-# Secret Manager API in the GCP project and granting the service account the
-# secretmanager.secretAccessor role.
-SENDGRID_API_KEY_FILE = Path("~/.config/weekly-report/sendgrid_api_key.txt").expanduser()
-SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
 
 ######################
 # WEEKLY messages and subjects
 ######################
-
 # ORG_WEEKLY_MSG = ("A new WEEKLY Sincere summary report is available for your room sent to the organizers below, THE LAST WEEKLY UNTIL THE MIDTERMS IN MARCH.  "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser.")
 # ORG_WEEKLY_MSG = ("The FINAL WEEKLY Sincere summary report is available for your room sent to the organizers below. "
@@ -29,16 +16,28 @@ SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                         )
 ORG_WEEKLY_SUBJECT = "New Weekly Sincere Summary Report for"
-ORG_WEEKLY_MSG = (f"A new WEEKLY Sincere summary report is available for your room sent to the organizers below. "
-                  f"To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
-                  f"Click to open.")
+ORG_WEEKLY_MSG = (
+    f"Dear Organizer friend,"
+    f"\n\nA new WEEKLY Sincere summary report is available for your room sent to the organizers below. "
+    f"To access the sheet you will need to be logged in to Google.  "
+    f"Do this by using the Chrome browser or by going to google.com in another browser. Click to open."
+    f"\n\nThis report was sent to all organizers in the room, listed below."
+    f"\n\nContact Brian at kramsman@yahoo.com with any questions"
+    f"google.com in another browser. Click to open."
+)
 
 # CORE_WEEKLY_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the Postcard Team members below. "
 #                   f"Click to open.")
 # CORE_WEEKLY_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below, THE LAST UNTIL THE MIDTERMS IN 2026.")
-CORE_WEEKLY_SUBJECT = "New Weekly All-Room Sincere Summary Report"
-CORE_WEEKLY_MSG = ("A new WEEKLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below. "
-                        "Click to open.")
+CORE_WEEKLY_SUBJECT = "New Weekly Admin Summary Report Covering All Rooms"
+CORE_WEEKLY_MSG = (
+    "Postcard Team,"
+    "\n\nA new Weekly Admin Summary Report Covering All Rooms has been created and sent to the Postcard Team members below. "
+    "Click to open."
+    "\n\nIf you look at the chart, VA is following the repeated pattern for address requests, the same as WI - a surge "
+    "in the beginning as organizerrs fill their rooms and then a tapering off."
+    f"\n\nContact me at kramsman@yahoo.com with any questions"
+)
 
 ######################
 # MONTHLY messages and subjects
@@ -57,9 +56,6 @@ ORG_MONTHLY_MSG = ("A new MONTHLY Sincere summary report is available for your r
 # campaign cycle.. "
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                   "Click to open.")
-
-TEST_EMAIL_LIST = ['kramsman@yahoo.com']  # limit permission emails to these during testing; set to [] for production
-TEST_ROOM_LIMIT = 1  # max rooms to upload in test mode; set to 0 for production (no limit)
 
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com',
 #                    'rovkatyhickman@gmail.com',
@@ -80,9 +76,17 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'bkramer@kramericore.com']
 # CORE_EMAIL_LIST = ['kramsman+test@Gmail.com']
 
 
-# Google cloud console for authorizations: https://console.cloud.google.com/home/dashboard?project=voterletters-reports,
-# then 'APi and Services' (upper left)>credentials.  +Create > Oauth > desktop
-# delete token.json / credentials.json.  Rename to credentials, copy in
+CREDS_DIR = "~/.config/weekly-report"
+SERVICE_ACCOUNT_FILE = Path("~/.config/weekly-report/service_account.json").expanduser()
+
+# SendGrid API key — stored in a local plain-text file, same pattern as service_account.json.
+# Each user places it once at this path. No login or browser popup needed.
+# Alternative: GCP Secret Manager — key stored centrally in one place; rotate it once and all
+# users get the new version automatically, no file to distribute. Requires enabling the
+# Secret Manager API in the GCP project and granting the service account the
+# secretmanager.secretAccessor role.
+SENDGRID_API_KEY_FILE = Path("~/.config/weekly-report/sendgrid_api_key.txt").expanduser()
+SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
 
 # determine if application is running as a script file or frozen exe
 if getattr(sys, 'frozen', False):
@@ -94,24 +98,26 @@ elif __file__:
     ROOT_PATH = Path(__file__).parents[0]
 else:
     ROOT_PATH = None
-# ROOT_PATH = str(ROOT_PATH)
 
 # for google drive api
 SEND_PERMISSION_EMAIL_FLAG = True  # send permission granted emails
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
+# folders on tech@centerforcommonground.org 'CFCG Postcarding Drive' shared drive
+ROOM_REPORT_FOLDER_ID = "1KMRv2t156EDV9FJnrcfI3ERIA5I-xkWQ"
+ADMIN_REPORT_FOLDER_ID = '1c56gF9kRzpGeK3lcrQJiG8LRvkPalcxg'
+
 # ROOM_REPORT_FOLDER_ID = "1OEAdTnhQoAKpyzFqYdM1ztr42vHAqbk5"  # Folder holding Sincere Organizer Reports
-ROOM_REPORT_FOLDER_ID = "1KMRv2t156EDV9FJnrcfI3ERIA5I-xkWQ"  # 'VoterLetters Organizer Reports' Shared Drive
 # ROOM_REPORT_FOLDER_ID = "1BcvXzwyEKGiiWSt27NLaassLE0DMgioP"  # 'VoterLetters Organizer Reports' copied to Tech@CFCG
 # ADMIN_REPORT_FOLDER_ID = '1_vTXsMYOwK_TLYaRqC7YA_jolBuqDWP4'
 # ADMIN_REPORT_FOLDER_ID = '1uILHx5lllvFqYjpzzYI-9JtTivHRitdx'  # test move folder from CFTech to Tech@CFCG
 # ADMIN_REPORT_FOLDER_ID = '0AOkQpyahstHzUk9PVA'  # FAILED - would not give permission - share drive on Tech@CFCG
 # ADMIN_REPORT_FOLDER_ID = '1hyArqMhrgCJeRoN7tHR8Rmkzn4BvCmpq'  # WORKS - Tech@CFCG my drive folder (NOT share)
-ADMIN_REPORT_FOLDER_ID = '1c56gF9kRzpGeK3lcrQJiG8LRvkPalcxg'  # 'VoterLetters Admin Reports' Shared Drive
 # ADMIN_REPORT_FOLDER_ID = '1PU8hcYfE3Vlh5v8Cq60Gup_8lfaFff4b'  # 'VoterLetters Admin Reports' copied to Tech@CFCG
 
 SINCERE_DOWNLOAD_DIR = "~/Downloads/"
-OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"  # folder where
+# folders where xlsx files are created in 'run'
+OUTPUT_DIR_ADMIN = "~/Dropbox/Postcard Files/VL Admin Reports"
 OUTPUT_DIR_REPORTS = "~/Dropbox/Postcard Files/VL Org Reports"
 
 state_list = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN",
@@ -119,6 +125,8 @@ state_list = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", 
               "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
               "VI", "WA", "WV", "WI", "WY"]
 
+TEST_EMAIL_LIST = ['kramsman@yahoo.com']  # limit permission emails to these during testing; set to [] for production
+TEST_ROOM_LIMIT = 1  # max rooms to upload in test mode; set to 0 for production (no limit)
 
 noteLines = [
     '',
