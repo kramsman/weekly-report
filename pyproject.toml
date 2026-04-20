@@ -7,7 +7,6 @@ dependencies = [
     "google>=3.0.0",
     "google-api-python-client>=2.190.0",
     "google-auth-oauthlib>=1.2.4",
-    "bekgoogle",
     "sendgrid>=6.12.5",
 ]
 
@@ -15,9 +14,6 @@ dependencies = [
 # main in _run_report_.py
 [project.scripts]
 weekly-report = "weekly_report._run_report_:main"
-
-[tool.uv.sources]
-bekgoogle = { git = "https://github.com/kramsman/bekgoogle.git" }
 
 [tool.pytest.ini_options]
 markers = [

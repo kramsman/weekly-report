@@ -1,5 +1,10 @@
 """ produce weekly reports on Sincere and upload them to Google drive.
 Assign permissions to organizers which sends a Google notification.
+
+If you get an error "Gitupdater not found:
+  1. go into terminal
+  2. copy and enter: source .venv/bin/activate
+  3. then enter: uv pip install git+https://github.com/kramsman/gitupdater.git
  """
 
 # FIXME: Import from the google_scripts directory set up the CFCG directory project.

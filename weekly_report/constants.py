@@ -15,7 +15,7 @@ FACTORY_FILTER_STRING = '-2026'  # must contain so we only get this year's campa
 #                         "IT IS THE LAST UNTIL THE MIDTERMS IN 2026."
 #                   "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser or by going to google.com in another browser."
 #                         )
-ORG_WEEKLY_SUBJECT = "A Little Late... - New Weekly Sincere Summary Report for"
+ORG_WEEKLY_SUBJECT = "New Weekly Sincere Summary Report for "
 ORG_WEEKLY_MSG = (
     f"Dear Organizer friend,"
     f"\n\nA new WEEKLY Sincere summary report is available for your room. "
@@ -28,7 +28,7 @@ ORG_WEEKLY_MSG = (
 # CORE_WEEKLY_MSG = (f"A new WEEKLY ROV-WIDE Sincere summary report, THE LAST UNTIL THE VA GENERAL END OF SUMMER, has been sent to the Postcard Team members below. "
 #                   f"Click to open.")
 # CORE_WEEKLY_MSG = ("The FINAL WEEKLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below, THE LAST UNTIL THE MIDTERMS IN 2026.")
-CORE_WEEKLY_SUBJECT = "A Little Late... - New Weekly Admin Summary Report Covering All Rooms"
+CORE_WEEKLY_SUBJECT = "New Weekly Admin Summary Report Covering All Rooms"
 CORE_WEEKLY_MSG = (
     "Postcard Team,"
     "\n\nA new Weekly Admin Summary Report Covering All Rooms has been created and sent to the Postcard Team members below. "
@@ -39,7 +39,7 @@ CORE_WEEKLY_MSG = (
 ######################
 # MONTHLY messages and subjects
 ######################
-ORG_MONTHLY_SUBJECT = "A Little Late... - New Monthly Sincere Summary Report for"
+ORG_MONTHLY_SUBJECT = "New Monthly Sincere Summary Report for "
 ORG_MONTHLY_MSG = (
     "A new MONTHLY Sincere summary report is available for your room sent to the organizers below. "
     "To access the sheet you will need to be logged in to Google.  Do this by using the Chrome browser "
@@ -53,8 +53,8 @@ ORG_MONTHLY_MSG = (
 
 # CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below, the last monthly for this campaign cycle. "
 #                   f"Click to open.")
-CORE_MONTHLY_SUBJECT = "A Little Late... - New Monthly All-Room Sincere Summary Report"
-CORE_MONTHLY_MSG = (f"A Little Late... - A new MONTHLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below. "
+CORE_MONTHLY_SUBJECT = "New Monthly All-Room Sincere Summary Report"
+CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below. "
                   f"Click to open.")
 
 CORE_EMAIL_LIST = ['kramsman@yahoo.com',
