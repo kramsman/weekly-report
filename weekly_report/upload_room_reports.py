@@ -22,7 +22,7 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str,
                         folder_id: str, send_email_flag: bool,
                         weekly_msg: str | None, weekly_subject: str | None,
                         monthly_msg: str | None, monthly_subject: str | None,
-                        sendgrid_api_key_file: Path, sendgrid_from_email: str,
+                        email_api_key_file: Path, email_from_email: str,
                         test_room_limit: int = 0,
                         test_email_list: list[str] | None = None,
                         all_organizer_email_list: list[list[str]] | None = None) -> None:
@@ -103,7 +103,7 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str,
                 if send_email_flag and notification_msg:
                     send_drive_notification(perm_email, uploaded_file_id, notification_msg,
                                             f"{notification_subject} — {room_name}",
-                                            sendgrid_from_email, sendgrid_api_key_file,
+                                            email_from_email, email_api_key_file,
                                             all_recipients=test_email_list,
                                             error_log_file=ERROR_LOG_FILE,
                                             error_context=room_name)
@@ -121,7 +121,7 @@ def upload_room_reports(drive_service: Any, str_dir_to_upload: str,
                     if send_email_flag and notification_msg:
                         send_drive_notification(email, uploaded_file_id, notification_msg,
                                                 f"{notification_subject} — {room_name}",
-                                                sendgrid_from_email, sendgrid_api_key_file,
+                                                email_from_email, email_api_key_file,
                                                 all_recipients=[email],
                                                 error_log_file=ERROR_LOG_FILE,
                                                 error_context=room_name)

@@ -21,7 +21,7 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
                  core_monthly_msg: str, core_monthly_subject: str,
                  org_monthly_msg: str, org_monthly_subject: str,
                  output_dir_admin: str, output_dir_reports: str, sincere_download_dir: str,
-                 sendgrid_api_key_file: Path, sendgrid_from_email: str) -> None:
+                 email_api_key_file: Path, email_from_email: str) -> None:
     """Interactively upload admin and/or room reports to Google Drive.
 
     Prompts the user to confirm email message text, then offers separate
@@ -131,7 +131,7 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
                             folder_id=admin_folder_id, email_list=core_email_list, send_email_flag=send_email_flag,
                             weekly_msg=core_weekly_msg, weekly_subject=core_weekly_subject,
                             monthly_msg=core_monthly_msg, monthly_subject=core_monthly_subject,
-                            sendgrid_api_key_file=sendgrid_api_key_file, sendgrid_from_email=sendgrid_from_email)
+                            email_api_key_file=email_api_key_file, email_from_email=email_from_email)
 
     if upload_room:
         # do the upload from local to google sheets
@@ -139,7 +139,7 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
                             folder_id=room_folder_id, send_email_flag=send_email_flag,
                             weekly_msg=org_weekly_msg, weekly_subject=org_weekly_subject,
                             monthly_msg=org_monthly_msg, monthly_subject=org_monthly_subject,
-                            sendgrid_api_key_file=sendgrid_api_key_file, sendgrid_from_email=sendgrid_from_email,
+                            email_api_key_file=email_api_key_file, email_from_email=email_from_email,
                             test_room_limit=test_room_limit,
                             test_email_list=test_email_list,
                             all_organizer_email_list=all_organizer_email_list)

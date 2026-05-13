@@ -18,7 +18,7 @@ def upload_admin_report(*, drive_service: Any, admin_report_to_upload: str | Pat
                         email_list: list[str], send_email_flag: bool,
                         weekly_msg: str | None, weekly_subject: str | None,
                         monthly_msg: str | None, monthly_subject: str | None,
-                        sendgrid_api_key_file: Path, sendgrid_from_email: str) -> None:
+                        email_api_key_file: Path, email_from_email: str) -> None:
     """Upload the admin (ROV-wide) report to Google Drive and notify the Core group.
 
     Deletes any existing Drive file with the same name in the admin folder
@@ -56,7 +56,7 @@ def upload_admin_report(*, drive_service: Any, admin_report_to_upload: str | Pat
 
     for email in email_list:
         logger.debug(f"Adding ROV-wide permission for email: {email}")
-        # suppress Google's notification — SendGrid sends a custom email instead
+        # suppress Google's notification — custom email sent below instead
         try:
             permission_to_drive_file(drive_service, uploaded_file_id, False, email, None)
         except Exception as e:
@@ -65,6 +65,6 @@ def upload_admin_report(*, drive_service: Any, admin_report_to_upload: str | Pat
                 f.write(f"PERMISSION ERROR: email: {email}, error: {e}\n")
         if send_email_flag and notification_msg:
             send_drive_notification(email, uploaded_file_id, notification_msg, notification_subject,
-                                    sendgrid_from_email, sendgrid_api_key_file,
+                                    email_from_email, email_api_key_file,
                                     all_recipients=email_list,
                                     error_log_file=ERROR_LOG_FILE)

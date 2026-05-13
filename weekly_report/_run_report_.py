@@ -46,8 +46,8 @@ from weekly_report.constants import (
     TEST_EMAIL_LIST,
     TEST_ROOM_LIMIT,
     SEND_PERMISSION_EMAIL_FLAG,
-    SENDGRID_API_KEY_FILE,
-    SENDGRID_FROM_EMAIL,
+    EMAIL_API_KEY_FILE,
+    EMAIL_FROM,
     ORG_WEEKLY_MSG,
     ORG_WEEKLY_SUBJECT,
     CORE_WEEKLY_MSG,
@@ -122,7 +122,7 @@ def main() -> None:
                      org_monthly_msg=ORG_MONTHLY_MSG, org_monthly_subject=ORG_MONTHLY_SUBJECT,
                      output_dir_admin=OUTPUT_DIR_ADMIN,
                      output_dir_reports=OUTPUT_DIR_REPORTS, sincere_download_dir=SINCERE_DOWNLOAD_DIR,
-                     sendgrid_api_key_file=SENDGRID_API_KEY_FILE, sendgrid_from_email=SENDGRID_FROM_EMAIL)
+                     email_api_key_file=EMAIL_API_KEY_FILE, email_from_email=EMAIL_FROM)
         if ERROR_LOG_FILE.exists():
             pyautobek.alert_with_file_link("Errors occurred during upload. See details:",
                                            ERROR_LOG_FILE, "Upload Errors")

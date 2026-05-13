@@ -57,19 +57,19 @@ CORE_MONTHLY_SUBJECT = "New Monthly All-Room Sincere Summary Report"
 CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below. "
                   f"Click to open.")
 
-CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-                   'rovkatyhickman@gmail.com',
-                   'Andrea@centerforcommonground.org',
-                   'dee@centerforcommonground.org',
-                   'comstockrov@gmail.com',
-                   'nancy@centerforcommonground.org',
-                   'bill.becky.rov@gmail.com',
-                   'carey@harmonicsystems.net',
-                   'gideon.asher1@gmail.com',
-                   'gabriel@centerforcommonground.org',
-                   'josi@centerforcommonground.org',
-                   ]
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+#                    'rovkatyhickman@gmail.com',
+#                    'Andrea@centerforcommonground.org',
+#                    'dee@centerforcommonground.org',
+#                    'comstockrov@gmail.com',
+#                    'nancy@centerforcommonground.org',
+#                    'bill.becky.rov@gmail.com',
+#                    'carey@harmonicsystems.net',
+#                    'gideon.asher1@gmail.com',
+#                    'gabriel@centerforcommonground.org',
+#                    'josi@centerforcommonground.org',
+#                    ]
+CORE_EMAIL_LIST = ['kramsman@yahoo.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'bkramer@kramericore.com']
@@ -78,13 +78,28 @@ CORE_EMAIL_LIST = ['kramsman@yahoo.com',
 AUTHORIZATION_KEY_DIR = "~/.config/weekly-report"
 SERVICE_ACCOUNT_FILE = Path("~/.config/weekly-report/service_account.json").expanduser()
 
-# Programmer note: SendGrid API key — stored in a local plain-text file, same pattern as service_account.json.
-# Each user places it once at this path. No login or browser popup needed.
-# Alternative: could use a GCP Secret Manager — key stored centrally in one place; rotate it once and all
-# users get the new version automatically, no file to distribute. Requires enabling the
-# Secret Manager API in the GCP project and granting the service account the secretmanager.secretAccessor role.
+# Email provider selection — change this one constant to switch providers.
+# "sendgrid" | "brevo" | "smtp_gmail"
+EMAIL_PROVIDER = "brevo"
+
+# Provider-specific key files — place the key/password once at the path for the active provider.
+# SendGrid: API key from sendgrid.com
 SENDGRID_API_KEY_FILE = Path("~/.config/weekly-report/sendgrid_api_key.txt").expanduser()
-SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
+# Brevo: API key from app.brevo.com → SMTP & API → API Keys
+BREVO_API_KEY_FILE = Path("~/.config/weekly-report/brevo_api_key.txt").expanduser()
+# smtp_gmail: 16-character App Password from myaccount.google.com → Security → App Passwords
+GMAIL_APP_PASSWORD_FILE = Path("~/.config/weekly-report/gmail_app_password.txt").expanduser()
+
+# SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
+SENDGRID_FROM_EMAIL = "tech@centerforcommonground.org"
+EMAIL_FROM = SENDGRID_FROM_EMAIL  # same sender address for all providers
+
+_EMAIL_KEY_FILES = {
+    "sendgrid": SENDGRID_API_KEY_FILE,
+    "brevo": BREVO_API_KEY_FILE,
+    "smtp_gmail": GMAIL_APP_PASSWORD_FILE,
+}
+EMAIL_API_KEY_FILE = _EMAIL_KEY_FILES[EMAIL_PROVIDER]
 ERROR_LOG_FILE = Path("~/Dropbox/Postcard Files/VL upload_errors.txt").expanduser()
 
 # determine if application is running as a script file or frozen exe
