@@ -90,9 +90,9 @@ BREVO_API_KEY_FILE = Path("~/.config/weekly-report/brevo_api_key.txt").expanduse
 # smtp_gmail: 16-character App Password from myaccount.google.com → Security → App Passwords
 GMAIL_APP_PASSWORD_FILE = Path("~/.config/weekly-report/gmail_app_password.txt").expanduser()
 
-# SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
-SENDGRID_FROM_EMAIL = "tech@centerforcommonground.org"
-EMAIL_FROM = SENDGRID_FROM_EMAIL  # same sender address for all providers
+SENDGRID_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
+BREVO_FROM_EMAIL = "tech@centerforcommonground.org"
+GMAIL_FROM_EMAIL = "centerforcommonground.tech@gmail.com"
 
 _EMAIL_KEY_FILES = {
     "sendgrid": SENDGRID_API_KEY_FILE,
@@ -100,6 +100,13 @@ _EMAIL_KEY_FILES = {
     "smtp_gmail": GMAIL_APP_PASSWORD_FILE,
 }
 EMAIL_API_KEY_FILE = _EMAIL_KEY_FILES[EMAIL_PROVIDER]
+
+_EMAIL_FROM_EMAILS = {
+    "sendgrid": SENDGRID_FROM_EMAIL,
+    "brevo": BREVO_FROM_EMAIL,
+    "smtp_gmail": GMAIL_FROM_EMAIL,
+}
+EMAIL_FROM = _EMAIL_FROM_EMAILS[EMAIL_PROVIDER]
 ERROR_LOG_FILE = Path("~/Dropbox/Postcard Files/VL upload_errors.txt").expanduser()
 
 # determine if application is running as a script file or frozen exe
