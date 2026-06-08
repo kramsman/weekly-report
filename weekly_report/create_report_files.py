@@ -82,8 +82,10 @@ def create_report_files() -> None:
                          x.lower()))]
 
     # Set Election field to one of two values: General if 'general' found in name else Primary
-    sincere_df['election'] = sincere_df['factory_name'].apply(lambda fact: ('General' if 'general' in fact.lower()
-                                                                            else 'Primary'))
+    # sincere_df['election'] = sincere_df['factory_name'].apply(lambda fact: ('General' if 'general' in fact.lower()
+    #                                                                         else 'Primary'))
+    sincere_df['election'] = sincere_df['factory_name'].apply(lambda fact: ('Primary' if any(k in fact.lower() for k in ('redistrict', 'court', 'primary'))
+                      else 'General'))
 
     # Create a dictionary of the earliest(min) date in a Factory to use for sorting
     factory_dict = sincere_df.groupby(by=['factory_name'], dropna=False)['created_at'].min().apply(
