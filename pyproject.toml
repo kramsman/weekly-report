@@ -16,6 +16,16 @@ dependencies = [
 [project.scripts]
 weekly-report = "weekly_report._run_report_:main"
 
+# The repo has a flat layout with a sibling `Work/` directory of loose scripts.
+# Without this, setuptools' auto-discovery sees both `Work` and `weekly_report`
+# as top-level packages and refuses to build. Limit the build to the real package.
+# `namespaces = true` is required because weekly_report has no __init__.py files
+# (it is a PEP 420 implicit namespace package); without it, discovery would find
+# nothing and ship an empty wheel.
+[tool.setuptools.packages.find]
+include = ["weekly_report*"]
+namespaces = true
+
 [tool.pytest.ini_options]
 markers = [
     "integration: marks tests as integration tests (may call external services)",
