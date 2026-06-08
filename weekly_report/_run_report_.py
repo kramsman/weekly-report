@@ -21,7 +21,7 @@ If you get an error "Gitupdater not found:
 import sys
 import os
 sys.path.append(os.path.expanduser("~/Dropbox/Postcard Files/"))
-if True:
+if False:
     import gitupdater
 
 from weekly_report.create_report_files import create_report_files
