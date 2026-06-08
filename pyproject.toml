@@ -11,10 +11,11 @@ dependencies = [
     "brevo-python>=4.0.0",
 ]
 
-# command run from comman line or in uvs is weekly-report-root and it will run
-# main in _run_report_.py
+# Installs a console script named `weekly_report` that runs main() in
+# weekly_report/_run_report_.py. The name on the left is the command typed on the
+# command line; it must match the `command` field for this repo in rovprogs.sh.
 [project.scripts]
-weekly-report = "weekly_report._run_report_:main"
+weekly_report = "weekly_report._run_report_:main"
 
 # The repo has a flat layout with a sibling `Work/` directory of loose scripts.
 # Without this, setuptools' auto-discovery sees both `Work` and `weekly_report`
