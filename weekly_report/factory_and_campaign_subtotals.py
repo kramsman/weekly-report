@@ -54,7 +54,10 @@ def factory_and_campaign_subtotals(factory_csv: str | Path | None = None, factor
         if 'parent-campaign-address-counts' not in str(factory_csv):
             exit_yes("File must have 'parent-campaign-address-counts' in the name", "WRONG FILE TYPE")
 
-    sincere_data = pd.read_csv(factory_csv)
+    # sincere_data = pd.read_csv(factory_csv)
+    if isinstance(factory_csv, pd.DataFrame):
+      return factory_csv
+    return pd.read_csv(factory_csv)
 
     # clean up factories and campaigns to contain in report
     sincere_data = sincere_data[(sincere_data['Factory'].notna() & ~sincere_data['Name'].str.lower().str.contains("test"))]
@@ -102,15 +105,25 @@ def factory_and_campaign_subtotals(factory_csv: str | Path | None = None, factor
 if __name__ == '__main__':
     import pandas as pd
     from pathlib import Path
-    from bekutils import exe_file
-    from bekutils import bek_excel_titles
-    from bekutils import setup_loguru
+    from uvbekutils import exe_file
+    from uvbekutils import bek_excel_titles
+    from uvbekutils import read_file_to_df
+    from uvbekutils import setup_loguru
 
     setup_loguru("DEBUG", "DEBUG")
 
-    df_pt, date_pulled = factory_and_campaign_subtotals(factory_csv="/Users/Denise/Downloads/parent-campaign-address-counts-2024-08-11.csv",
+    df = read_file_to_df("/Users/Denise/Downloads/parent-campaign-address-counts-2026-06-08.csv")
+    # df_pt, date_pulled = factory_and_campaign_subtotals(factory_csv="/Users/Denise/Downloads/parent-campaign-address-counts-2026-06-08.csv",
+    #                                                     break_fields="[('Factory', True), ('Name', False),]",
+    #                                                     factory_must_have_string='2026')
+
+    df_pt, date_pulled = factory_and_campaign_subtotals(factory_csv=df,
                                                         break_fields="[('Factory', True), ('Name', False),]",
-                                                        factory_must_have_string='2024')
+                                                        factory_must_have_string='2026')
+
+    sincere_df['election'] = sincere_df['factory_name'].apply(lambda fact: ('Primary' if any(k in fact.lower() for k in ('redistrict', 'court', 'primary'))
+                      else 'General'))
+
     # break_fields = "[('Factory', True), ('Name', False), ]",
     # df_pt, date_pulled = factory_and_campaign_subtotals(factory_must_have_string='2024',
     #                         factory_csv=Path("~/Downloads/parent-campaign-address-counts-2024-03-03.csv").expanduser())

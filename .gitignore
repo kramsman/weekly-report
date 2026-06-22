@@ -168,3 +168,4 @@ cython_debug/
 .idea/
 /.claude/settings.local.json
 /upgrade.sh
+/weekly_report/factory_and_campaign_subtotals.xlsx

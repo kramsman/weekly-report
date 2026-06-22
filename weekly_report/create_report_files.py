@@ -34,7 +34,7 @@ def create_report_files() -> None:
     else:
         exit()
 
-    if True:  # False out prompt for debugging
+    if False:  # False out prompt for debugging
         input_file = select_file("Pick a Sincere Requests File",
                                     SINCERE_DOWNLOAD_DIR,
                                  'all-parent-campaigns-requests*.csv',
@@ -43,13 +43,13 @@ def create_report_files() -> None:
                                  "Select Sincere address export file 'all-parent-campaign-REQUESTS-yyyy-mm-dd.csv'"
                                  )
     else:
-        input_file = "/Users/Denise/Downloads/all-parent-campaigns-requests-2026-02-16.csv"
+        input_file = "/Users/Denise/Downloads/all-parent-campaigns-requests-2026-06-08.csv"
 
     if input_file is None:
         exit()
     # input_file = Path('/Users/Denise/Downloads/all-parent-campaigns-requests-2025-08-01.csv')
 
-    if True:  # False out for debugging
+    if False:  # False out for debugging
         factory_csv = select_file("Pick an Address Counts File",
                               SINCERE_DOWNLOAD_DIR,
                               'parent-campaign-address-counts*.csv',
@@ -60,7 +60,7 @@ def create_report_files() -> None:
                                 f"\n\nCreate via ROV > Reports > New Report > Parent Campaign Address COUNTS",
                               )
     else:
-        factory_csv = "/Users/Denise/Downloads/parent-campaign-address-counts-2026-02-16.csv"
+        factory_csv = "/Users/Denise/Downloads/parent-campaign-address-counts-2026-06-08.csv"
 
     if factory_csv is None:
         exit()

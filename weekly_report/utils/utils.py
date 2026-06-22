@@ -6,7 +6,6 @@ import pandas as pd
 from loguru import logger
 from openpyxl.worksheet.worksheet import Worksheet
 from uvbekutils import exit_yes
-from uvbekutils import exit_yes
 
 
 def check_sheet_headers(ws: Worksheet, vals: list[tuple[str, str]]) -> None:
