@@ -1,12 +1,15 @@
 """Summarise Sincere parent-campaign address counts with factory subtotals."""
 
 from pathlib import Path
-
 import pandas as pd
 
+from weekly_report.constants import PRIMARY_KEYWORDS
 
-def factory_and_campaign_subtotals(factory_csv: str | Path | None = None, factory_must_have_string: str | None = None,
-                                   break_fields: str = "[('Factory', True), ('Name', False), ]") -> tuple[pd.DataFrame, str]:
+
+def factory_and_campaign_subtotals(factory_csv: "str | Path | pd.DataFrame | None" = None,
+                                   factory_must_have_string: str | None = None,
+                                   break_fields: str = "[('Factory', True), ('Name', False), ]",
+                                   report_date: "str | datetime | None" = None) -> tuple[pd.DataFrame, str]:
     """Read a Sincere parent-campaign-address-counts CSV and return subtotalled data.
 
     Filters out test/zzz factories and campaigns, derives Election and
@@ -15,14 +18,21 @@ def factory_and_campaign_subtotals(factory_csv: str | Path | None = None, factor
     Prompts for the file via a dialog if factory_csv is not supplied.
 
     Args:
-        factory_csv: Path to a 'parent-campaign-address-counts' CSV from
-            Sincere. If None, a file-picker dialog is shown. Defaults to None.
+        factory_csv: A 'parent-campaign-address-counts' source from Sincere.
+            May be a path to a CSV, or an already-loaded pandas DataFrame
+            (which is copied, not mutated). If None, a file-picker dialog is
+            shown. Defaults to None.
         factory_must_have_string: Substring that Factory names must contain
             (e.g. '2024') to limit results to a specific year. If None, all
             factories are included. Defaults to None.
         break_fields: Stringified list of (field, subtotal) tuples passed to
             sumby_w_totals(), controlling grouping levels. Defaults to
             "[('Factory', True), ('Name', False), ]".
+        report_date: Report ('data to') date used in the returned date string.
+            Required when factory_csv is a DataFrame (since there is no filename
+            to parse); accepts a 'YYYY-MM-DD' string or a datetime. Ignored when
+            factory_csv is a path, where the date is parsed from the filename.
+            Defaults to None.
 
     Returns:
         A tuple of (summary DataFrame, report-date string 'YYYY-MM-DD').
@@ -50,14 +60,16 @@ def factory_and_campaign_subtotals(factory_csv: str | Path | None = None, factor
                                    f"'parent-campaign-address-counts-2023-08-03.csv'."
                                    f"\n\nCreate via ROV > Reports > New Report > Parent Campaign Address Counts",
                                    )
-    else:
+    elif not isinstance(factory_csv, pd.DataFrame):
         if 'parent-campaign-address-counts' not in str(factory_csv):
             exit_yes("File must have 'parent-campaign-address-counts' in the name", "WRONG FILE TYPE")
 
-    # sincere_data = pd.read_csv(factory_csv)
+    # accept an already-loaded DataFrame (copied so we don't mutate the caller's frame)
+    # or read the CSV from the supplied path
     if isinstance(factory_csv, pd.DataFrame):
-      return factory_csv
-    return pd.read_csv(factory_csv)
+        sincere_data = factory_csv.copy()
+    else:
+        sincere_data = pd.read_csv(factory_csv)
 
     # clean up factories and campaigns to contain in report
     sincere_data = sincere_data[(sincere_data['Factory'].notna() & ~sincere_data['Name'].str.lower().str.contains("test"))]
@@ -67,7 +79,18 @@ def factory_and_campaign_subtotals(factory_csv: str | Path | None = None, factor
     if factory_must_have_string is not None:
         sincere_data = sincere_data[(sincere_data['Factory'].str.lower().str.contains(factory_must_have_string))]
 
-    sincere_data['Election'] = sincere_data['Factory'].apply(lambda fact: ('General' if 'general' in fact.lower() else 'Primary'))
+    # Classify each Factory into the two-value Election taxonomy the report breaks on
+    # (election_dict in create_report_files.py expects exactly 'General' / 'Primary').
+    # Keyword rule lives in constants.PRIMARY_KEYWORDS (shared with create_report_files.py).
+    def classify_election(factory_name: str) -> str:
+        name = factory_name.lower()
+        if 'general' in name:
+            return 'General'
+        if any(keyword in name for keyword in PRIMARY_KEYWORDS):
+            return 'Primary'
+        return 'General'
+
+    sincere_data['Election'] = sincere_data['Factory'].apply(classify_election)
 
     sincere_data['Remaining In Room'] = sincere_data['Assigned to Organizations'] - sincere_data['Assigned to Writers']
 
@@ -94,7 +117,13 @@ def factory_and_campaign_subtotals(factory_csv: str | Path | None = None, factor
 
     # don't back up a day for pull_date because snapshot is of the day report is run (may contain partial day's requests
     # date_pulled = datetime.strptime(str(factory_csv)[-14:-4], '%Y-%m-%d')+timedelta(days=-1)
-    date_pulled = datetime.strptime(str(factory_csv)[-14:-4], '%Y-%m-%d')
+    if isinstance(factory_csv, pd.DataFrame):
+        if report_date is None:
+            exit_yes("report_date is required when passing a DataFrame", "MISSING report_date")
+        date_pulled = report_date if isinstance(report_date, datetime) \
+            else datetime.strptime(str(report_date), '%Y-%m-%d')
+    else:
+        date_pulled = datetime.strptime(str(factory_csv)[-14:-4], '%Y-%m-%d')
     date_pulled_str = date_pulled.strftime('%Y-%m-%d')
 
     logger.debug("leaving factory_and_campaign_subtotals")
@@ -112,17 +141,17 @@ if __name__ == '__main__':
 
     setup_loguru("DEBUG", "DEBUG")
 
-    df = read_file_to_df("/Users/Denise/Downloads/parent-campaign-address-counts-2026-06-08.csv")
+    df = read_file_to_df(Path("/Users/Denise/Downloads/parent-campaign-address-counts-2026-06-08.csv"))
     # df_pt, date_pulled = factory_and_campaign_subtotals(factory_csv="/Users/Denise/Downloads/parent-campaign-address-counts-2026-06-08.csv",
     #                                                     break_fields="[('Factory', True), ('Name', False),]",
     #                                                     factory_must_have_string='2026')
 
+    # Election is derived inside factory_and_campaign_subtotals(); no need to pre-compute it.
     df_pt, date_pulled = factory_and_campaign_subtotals(factory_csv=df,
-                                                        break_fields="[('Factory', True), ('Name', False),]",
-                                                        factory_must_have_string='2026')
-
-    sincere_df['election'] = sincere_df['factory_name'].apply(lambda fact: ('Primary' if any(k in fact.lower() for k in ('redistrict', 'court', 'primary'))
-                      else 'General'))
+                                                        break_fields="[('Election',True),('Factory', True), "
+                                                                     "('Name', False),]",
+                                                        factory_must_have_string='2026',
+                                                        report_date='2026-06-08')
 
     # break_fields = "[('Factory', True), ('Name', False), ]",
     # df_pt, date_pulled = factory_and_campaign_subtotals(factory_must_have_string='2024',

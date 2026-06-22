@@ -9,6 +9,7 @@ from uvbekutils import pyautobek
 from uvbekutils import select_file
 
 from weekly_report.constants import FACTORY_FILTER_STRING
+from weekly_report.constants import PRIMARY_KEYWORDS
 from weekly_report.constants import OUTPUT_DIR_ADMIN
 from weekly_report.constants import OUTPUT_DIR_REPORTS
 from weekly_report.constants import SINCERE_DOWNLOAD_DIR
@@ -34,7 +35,7 @@ def create_report_files() -> None:
     else:
         exit()
 
-    if False:  # False out prompt for debugging
+    if True:  # False prompt for debugging
         input_file = select_file("Pick a Sincere Requests File",
                                     SINCERE_DOWNLOAD_DIR,
                                  'all-parent-campaigns-requests*.csv',
@@ -49,7 +50,7 @@ def create_report_files() -> None:
         exit()
     # input_file = Path('/Users/Denise/Downloads/all-parent-campaigns-requests-2025-08-01.csv')
 
-    if False:  # False out for debugging
+    if True:  # False for debugging
         factory_csv = select_file("Pick an Address Counts File",
                               SINCERE_DOWNLOAD_DIR,
                               'parent-campaign-address-counts*.csv',
@@ -81,11 +82,18 @@ def create_report_files() -> None:
         .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'training' in x.lower() or 'sample' in
                          x.lower()))]
 
-    # Set Election field to one of two values: General if 'general' found in name else Primary
-    # sincere_df['election'] = sincere_df['factory_name'].apply(lambda fact: ('General' if 'general' in fact.lower()
-    #                                                                         else 'Primary'))
-    sincere_df['election'] = sincere_df['factory_name'].apply(lambda fact: ('Primary' if any(k in fact.lower() for k in ('redistrict', 'court', 'primary'))
-                      else 'General'))
+    # Classify each factory into the two-value Election taxonomy (must match
+    # classify_election() in factory_and_campaign_subtotals.py so the pivot sheets and the
+    # subtotal sheets agree). Keyword rule lives in constants.PRIMARY_KEYWORDS.
+    def classify_election(factory_name: str) -> str:
+        name = factory_name.lower()
+        if 'general' in name:
+            return 'General'
+        if any(keyword in name for keyword in PRIMARY_KEYWORDS):
+            return 'Primary'
+        return 'General'
+
+    sincere_df['election'] = sincere_df['factory_name'].apply(classify_election)
 
     # Create a dictionary of the earliest(min) date in a Factory to use for sorting
     factory_dict = sincere_df.groupby(by=['factory_name'], dropna=False)['created_at'].min().apply(

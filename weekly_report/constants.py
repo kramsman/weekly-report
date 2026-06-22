@@ -6,6 +6,13 @@ from pathlib import Path
 # Can not filter for 'not locked' because that would exclude some current year closed campaigns
 FACTORY_FILTER_STRING = '-2026'  # must contain so we only get this year's campaigns
 
+# Primary-side keywords for Election classification. A factory whose name contains
+# 'general' is always General; otherwise a name matching any of these keywords is
+# Primary; everything else (e.g. pledge, special election, untagged) is General.
+# Used by classify_election() in create_report_files.py and
+# factory_and_campaign_subtotals.py so the pivot sheets and subtotal sheets agree.
+PRIMARY_KEYWORDS = ('primary', 'redistrict', 'court', 'runoff')
+
 ######################
 # WEEKLY messages and subjects
 ######################

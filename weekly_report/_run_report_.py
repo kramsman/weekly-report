@@ -83,7 +83,7 @@ def main() -> None:
     # Identify which files should be downloaded before starting
     reminder()
 
-    if True:  # False out prompt for testing
+    if True:  # False is prompt for testing
         choice = pyautobek.confirm(
                           (f"\n'Run' to create the admin report and room reports locally\n\n"
                                f"'Upload' to copy either the admin report, room reports, or both to Google sheets and send "
