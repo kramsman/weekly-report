@@ -6,9 +6,24 @@ import pandas as pd
 from openpyxl.styles import Font
 from uvbekutils import autosize_xls_cols
 from uvbekutils import exit_yes
+from uvbekutils import sumby_w_totals
 
 from weekly_report.constants import noteLines
 from weekly_report.make_pivot import make_pivot
+
+
+# Sort order for the Election index level so General sorts before Primary, with the
+# grand-total ('_TOTAL') row last. Other index levels keep alphabetical (upper-cased)
+# order, which leaves sumby_w_totals' subtotal ('_TOTAL') rows correctly placed at the
+# end of each group.
+_ELECTION_SORT_ORDER = {'General': '1', 'Primary': '2', '_TOTAL': '9'}
+
+
+def _campaign_totals_sort_key(level: pd.Index) -> pd.Index:
+    """Per-level key for sorting the 'Campaigns w Totals' MultiIndex."""
+    if level.name == 'election':
+        return level.map(lambda value: _ELECTION_SORT_ORDER.get(value, value))
+    return level.str.upper()
 
 
 def create_room_reports(*, sincere_df: pd.DataFrame, sincere_data_file: str, file_date: str, report_by: str,
@@ -51,6 +66,17 @@ def create_room_reports(*, sincere_df: pd.DataFrame, sincere_data_file: str, fil
         teams = sorted(xlo['team_name'].unique())
 
         writer = pd.ExcelWriter(excel_output_file, engine='openpyxl')
+
+        # campaigns with subtotal lines (no time series): subtotals on election and
+        # master_campaign, detail on parent_campaign_name. General sorts before Primary.
+        campaign_totals = sumby_w_totals(
+            xlo,
+            [('election', True), ('master_campaign', True), ('parent_campaign_name', False)],
+            ['addresses_count'], 'sum')
+        campaign_totals = campaign_totals.sort_index(key=_campaign_totals_sort_key)
+        campaign_totals.to_excel(writer, sheet_name='Campaigns w Totals', startrow=6)
+        ws_ct = writer.sheets['Campaigns w Totals']
+        ws_ct.freeze_panes = ws_ct['D8']
 
         # pivot on campaigns
         make_pivot(writer=writer, df=xlo, report_var=[report_var],
@@ -102,11 +128,12 @@ def create_room_reports(*, sincere_df: pd.DataFrame, sincere_data_file: str, fil
         for sh in wb.worksheets:
             sh['A1'].value = "Room: " + org
             sh['A1'].font = Font(b=True, size=20)
-            if sh.title not in ['Notes', 'Campaigns', 'Team Sums', 'Teams w Writers', 'Teams w Counts']:
+            if sh.title not in ['Notes', 'Campaigns w Totals', 'Campaigns', 'Team Sums', 'Teams w Writers',
+                                 'Teams w Counts']:
                 sh['A2'].value = "Team: " + sh.title
             sh['A2'].font = Font(b=True, size=16)
 
-            if sh.title != 'All Teams':
+            if sh.title not in ('All Teams', 'Campaigns w Totals'):
                 sh['A3'].value = ("By Month" if report_by.lower() == "m" else "By Week")
                 sh['A3'].font = Font(b=True, size=12)
 

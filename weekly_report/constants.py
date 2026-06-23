@@ -25,7 +25,7 @@ PRIMARY_KEYWORDS = ('primary', 'redistrict', 'court', 'runoff')
 ORG_WEEKLY_SUBJECT = "New Weekly Sincere Summary Report for "
 ORG_WEEKLY_MSG = (
     f"Dear Organizer friend,"
-    f"\n\nA new WEEKLY Sincere summary report is available for your room. "
+    f"\n\nA new WEEKLY Sincere summary report is available for your room. THERE IS A NEW TAB 'Campaigns w Totals.'  "
     f"To access the sheet you will need to be logged in to Google.  "
     f"Do this by using the Chrome browser or by going to google.com in another browser. Click to open."
     f"\n\nThis report was sent to all organizers in the room, listed below."
