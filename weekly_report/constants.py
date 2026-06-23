@@ -64,19 +64,20 @@ CORE_MONTHLY_SUBJECT = "New Monthly All-Room Sincere Summary Report"
 CORE_MONTHLY_MSG = (f"A new MONTHLY ROV-WIDE Sincere summary report has been sent to the Postcard Team members below. "
                   f"Click to open.")
 
-# CORE_EMAIL_LIST = ['kramsman@yahoo.com',
-#                    'rovkatyhickman@gmail.com',
-#                    'Andrea@centerforcommonground.org',
-#                    'dee@centerforcommonground.org',
-#                    'comstockrov@gmail.com',
-#                    'nancy@centerforcommonground.org',
-#                    'bill.becky.rov@gmail.com',
-#                    'carey@harmonicsystems.net',
-#                    'gideon.asher1@gmail.com',
-#                    'gabriel@centerforcommonground.org',
-#                    'josi@centerforcommonground.org',
-#                    ]
-CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+CORE_EMAIL_LIST = ['kramsman@yahoo.com',
+                   'rovkatyhickman@gmail.com',
+                   'Andrea@centerforcommonground.org',
+                   'dee@centerforcommonground.org',
+                   'comstockrov@gmail.com',
+                   'nancy@centerforcommonground.org',
+                   'bill.becky.rov@gmail.com',
+                   'carey@harmonicsystems.net',
+                   'gideon.asher1@gmail.com',
+                   'gabriel@centerforcommonground.org',
+                   'josi@centerforcommonground.org',
+                   ]
+# CORE_EMAIL_LIST = ['kramsman@yahoo.com']
+# CORE_EMAIL_LIST = ['kramsman@gmail.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['gideon.asher1@gmail.com']
 # CORE_EMAIL_LIST = ['kramsman@yahoo.com', 'bkramer@kramericore.com']
