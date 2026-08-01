@@ -13,6 +13,12 @@ FACTORY_FILTER_STRING = '2026'  # must contain so we only get this year's campai
 # factory_and_campaign_subtotals.py so the pivot sheets and subtotal sheets agree.
 PRIMARY_KEYWORDS = ('primary', 'redistrict', 'court', 'runoff')
 
+# Factory/campaign/room name substrings that mark non-production data (training and
+# sample rooms, test factories). Any name containing one of these is dropped.
+# Used by create_report_files.py (requests file) and factory_and_campaign_subtotals.py
+# (address-counts file) so both sides of the admin report exclude the same rooms.
+EXCLUDED_NAME_KEYWORDS = ('zzz', 'xxx', 'test', 'training', 'sample')
+
 ######################
 # WEEKLY messages and subjects
 ######################

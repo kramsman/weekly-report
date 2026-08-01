@@ -8,6 +8,7 @@ import pandas as pd
 from uvbekutils import pyautobek
 from uvbekutils import select_file
 
+from weekly_report.constants import EXCLUDED_NAME_KEYWORDS
 from weekly_report.constants import FACTORY_FILTER_STRING
 from weekly_report.constants import PRIMARY_KEYWORDS
 from weekly_report.constants import OUTPUT_DIR_ADMIN
@@ -74,12 +75,11 @@ def create_report_files() -> None:
     # only take factories from this year - many old and some new are locked
     sincere_df = sincere_df.loc[sincere_df['factory_name']
         .apply(lambda x: (FACTORY_FILTER_STRING in x.lower()))]
-    # remove any unwanted requests - training and sample rooms
-    sincere_df = sincere_df.loc[sincere_df['factory_name']
-        .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'test' in x.lower() or 'training' in x.lower() or 'sample' in x.lower()))]
-    # remove more unwanted requests - training and sample rooms
-    sincere_df = sincere_df.loc[sincere_df['org_name']
-        .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'test' in x.lower() or 'training' in x.lower() or 'sample' in x.lower()))]
+    # remove any unwanted requests - training and sample factories and rooms
+    # (same keyword list factory_and_campaign_subtotals.py applies to the address-counts file)
+    excluded_pattern = '|'.join(EXCLUDED_NAME_KEYWORDS)
+    for col in ('factory_name', 'org_name'):
+        sincere_df = sincere_df.loc[~sincere_df[col].str.lower().str.contains(excluded_pattern, na=False)]
 
     # Classify each factory into the two-value Election taxonomy (must match
     # classify_election() in factory_and_campaign_subtotals.py so the pivot sheets and the

@@ -3,6 +3,7 @@
 from pathlib import Path
 import pandas as pd
 
+from weekly_report.constants import EXCLUDED_NAME_KEYWORDS
 from weekly_report.constants import PRIMARY_KEYWORDS
 
 
@@ -12,7 +13,8 @@ def factory_and_campaign_subtotals(factory_csv: "str | Path | pd.DataFrame | Non
                                    report_date: "str | datetime | None" = None) -> tuple[pd.DataFrame, str]:
     """Read a Sincere parent-campaign-address-counts CSV and return subtotalled data.
 
-    Filters out test/zzz factories and campaigns, derives Election and
+    Filters out non-production factories and campaigns (constants.EXCLUDED_NAME_KEYWORDS
+    - training, sample, test, zzz, xxx), derives Election and
     Remaining-In-Room fields, collapses locked factories to a single row,
     and calls sumby_w_totals() to produce a subtotalled pivot DataFrame.
     Prompts for the file via a dialog if factory_csv is not supplied.
@@ -71,9 +73,12 @@ def factory_and_campaign_subtotals(factory_csv: "str | Path | pd.DataFrame | Non
     else:
         sincere_data = pd.read_csv(factory_csv)
 
-    # clean up factories and campaigns to contain in report
-    sincere_data = sincere_data[(sincere_data['Factory'].notna() & ~sincere_data['Name'].str.lower().str.contains("test"))]
-    sincere_data = sincere_data[(~sincere_data['Factory'].str.lower().str.contains("zzz"))]
+    # clean up factories and campaigns to contain in report - drop training/sample/test rooms
+    # (same keyword list the requests file is filtered by in create_report_files.py)
+    excluded_pattern = '|'.join(EXCLUDED_NAME_KEYWORDS)
+    sincere_data = sincere_data[sincere_data['Factory'].notna()]
+    sincere_data = sincere_data[~sincere_data['Name'].str.lower().str.contains(excluded_pattern, na=False)]
+    sincere_data = sincere_data[~sincere_data['Factory'].str.lower().str.contains(excluded_pattern, na=False)]
 
     # limit to factories containing factory_must_have_string
     if factory_must_have_string is not None:

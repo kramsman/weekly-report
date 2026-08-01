@@ -38,6 +38,10 @@ def create_admin_report(*, sincere_df: pd.DataFrame, sincere_data_file: str, rep
             used to sort factory/election subtotal DataFrames.
     """
 
+    # Sheets built from the parent-campaign-address-counts snapshot rather than the
+    # requests file; their header cites that file and its pull date.
+    SNAPSHOT_SHEETS = ['Assigned_by_state', 'Assigned_w_counties']
+
     logger.info("Core Report- Enterprise wide")
 
     report_by = report_by.upper()
@@ -107,15 +111,15 @@ def create_admin_report(*, sincere_df: pd.DataFrame, sincere_data_file: str, rep
         sh['A3'].value = ("By Month" if report_by == "M" else "By Week")
         sh['A3'].font = Font(b=True, size=12)
 
-        if sh.title in ['Totals']:  # factory / campaign snapshot file
+        if sh.title in SNAPSHOT_SHEETS:  # factory / campaign snapshot file
             sh['A4'].value = f"Data as of: {factory_pull_date}"
         else:
             sh['A4'].value = "Date range, inclusive: " + min_date2 + " to " + max_date2
 
         sh['A4'].font = Font(size=12)
 
-        if sh.title in ['Totals']:  # factory / campaign snapshot file
-            sh['A5'].value = "Source: " + str(factory_csv.name)
+        if sh.title in SNAPSHOT_SHEETS:  # factory / campaign snapshot file
+            sh['A5'].value = "Source: " + str(Path(factory_csv).name)
         else:
             sh['A5'].value = "Source: " + sincere_data_file
         sh['A5'].font = Font(size=12)
