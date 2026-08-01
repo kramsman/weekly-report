@@ -9,6 +9,8 @@ If you get an error "Gitupdater not found:
 
 # FIXME: Import from the google_scripts directory set up the CFCG directory project.
 
+# TODO: make location of reports produced links rather than just text in final popup
+
 # TODO speed up the room report upload
 # TODO: possible - add chart to all org reports (like admin)
 # TODO: Move off my personal google account
