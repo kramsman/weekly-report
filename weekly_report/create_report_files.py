@@ -76,10 +76,10 @@ def create_report_files() -> None:
         .apply(lambda x: (FACTORY_FILTER_STRING in x.lower()))]
     # remove any unwanted requests - training and sample rooms
     sincere_df = sincere_df.loc[sincere_df['factory_name']
-        .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'test' or 'training' or 'sample' in x.lower()))]
+        .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'test' in x.lower() or 'training' in x.lower() or 'sample' in x.lower()))]
     # remove more unwanted requests - training and sample rooms
     sincere_df = sincere_df.loc[sincere_df['org_name']
-        .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'test' or 'training' or 'sample' in x.lower()))]
+        .apply(lambda x: not ('zzz' in x.lower() or 'xxx' in x.lower() or 'test' in x.lower() or 'training' in x.lower() or 'sample' in x.lower()))]
 
     # Classify each factory into the two-value Election taxonomy (must match
     # classify_election() in factory_and_campaign_subtotals.py so the pivot sheets and the
