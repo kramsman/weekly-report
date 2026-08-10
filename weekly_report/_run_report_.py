@@ -130,6 +130,8 @@ def main() -> None:
                                            ERROR_LOG_FILE, "Upload Errors")
 
 
+    logger.info(f"")
+    logger.info(f"")
     logger.info(f"All done!")
 
     exit()
