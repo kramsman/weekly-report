@@ -158,8 +158,12 @@ def create_report_files() -> None:
                         report_by=report_by, str_output_dir_rooms=output_dir_w_file)
 
     print("\nDone with all orgs.")
-    pyautobek.alert(f"Org reports produced. In:"
-               f"\n\n{OUTPUT_DIR_REPORTS}"
-               f"\n\n\nAdmin reports produced. In:"
-               f"\n\n{OUTPUT_DIR_ADMIN}","Done!",
-                    )
+    # Links open the folders in Finder; org reports link goes to the run's own
+    # subdirectory, which is where the files just written actually live.
+    pyautobek.alert_with_file_link(
+        "Reports produced.\n\nClick a folder below to open it:",
+        [("Admin Reports:", OUTPUT_DIR_ADMIN),
+         ("Organizer Reports:", output_dir_w_file)],
+        "Done!",
+        width_scale=3,
+    )
