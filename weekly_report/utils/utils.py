@@ -1,11 +1,65 @@
 """Shared Excel and DataFrame utility helpers used across the weekly_report package."""
 
 import inspect
+import sys
+import threading
+from typing import Any, Callable
 
 import pandas as pd
 from loguru import logger
 from openpyxl.worksheet.worksheet import Worksheet
+from PySide6.QtWidgets import QApplication, QDialog, QLabel, QVBoxLayout
 from uvbekutils import exit_yes
+
+
+def run_with_busy_window(func: Callable[[], Any], title: str, msg: str) -> None:
+    """Run a long task in a worker thread while keeping the Qt event loop alive.
+
+    The uvbekutils dialogs turn this process into a macOS GUI app. If a long
+    task then blocks the main thread, macOS treats the app as hung and focus
+    switching between windows and Spaces stops working. Running the task in a
+    thread and pumping Qt events here keeps the app responsive. A small
+    non-modal window shows that work is in progress; closing it does not
+    cancel the task.
+
+    Args:
+        func: Zero-argument callable to run. It must not open Qt dialogs.
+        title: Title of the busy window.
+        msg: Message shown in the busy window.
+
+    Raises:
+        BaseException: Any exception raised by ``func`` is re-raised here.
+    """
+    app = QApplication.instance() or QApplication(sys.argv)
+
+    dialog = QDialog()
+    dialog.setWindowTitle(title)
+    layout = QVBoxLayout(dialog)
+    label = QLabel(msg)
+    label.setWordWrap(True)
+    layout.addWidget(label)
+    dialog.setMinimumWidth(400)
+    dialog.show()
+
+    error: list[BaseException] = []
+
+    def wrapper():
+        try:
+            func()
+        except BaseException as e:  # includes SystemExit from exit() calls
+            error.append(e)
+
+    worker = threading.Thread(target=wrapper, daemon=False)
+    worker.start()
+    while worker.is_alive():
+        app.processEvents()
+        worker.join(0.05)
+
+    dialog.close()
+    app.processEvents()
+
+    if error:
+        raise error[0]
 
 
 def check_sheet_headers(ws: Worksheet, vals: list[tuple[str, str]]) -> None:

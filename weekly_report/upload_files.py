@@ -11,6 +11,7 @@ from loguru import logger
 
 from weekly_report.upload_admin_report import upload_admin_report
 from weekly_report.upload_room_reports import upload_room_reports
+from weekly_report.utils.utils import run_with_busy_window
 
 
 def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: str, core_email_list: list[str],
@@ -125,21 +126,26 @@ def upload_files(*, drive_service: Any, admin_folder_id: str, room_folder_id: st
         # organizer_email_list is NOT filtered — test_email_list is passed to upload_room_reports
         # to override the actual organizer email for both permission and notification
 
-    if upload_admin:
-        # do the upload from local to google sheets
-        upload_admin_report(drive_service=drive_service, admin_report_to_upload=str_admin_report_to_upload,
-                            folder_id=admin_folder_id, email_list=core_email_list, send_email_flag=send_email_flag,
-                            weekly_msg=core_weekly_msg, weekly_subject=core_weekly_subject,
-                            monthly_msg=core_monthly_msg, monthly_subject=core_monthly_subject,
-                            email_api_key_file=email_api_key_file, email_from_email=email_from_email)
+    def _do_uploads():
+        """Run the Drive uploads; called in a worker thread so the GUI stays responsive."""
+        if upload_admin:
+            # do the upload from local to google sheets
+            upload_admin_report(drive_service=drive_service, admin_report_to_upload=str_admin_report_to_upload,
+                                folder_id=admin_folder_id, email_list=core_email_list, send_email_flag=send_email_flag,
+                                weekly_msg=core_weekly_msg, weekly_subject=core_weekly_subject,
+                                monthly_msg=core_monthly_msg, monthly_subject=core_monthly_subject,
+                                email_api_key_file=email_api_key_file, email_from_email=email_from_email)
 
-    if upload_room:
-        # do the upload from local to google sheets
-        upload_room_reports(drive_service, str_report_dir_to_upload, organizer_email_list,
-                            folder_id=room_folder_id, send_email_flag=send_email_flag,
-                            weekly_msg=org_weekly_msg, weekly_subject=org_weekly_subject,
-                            monthly_msg=org_monthly_msg, monthly_subject=org_monthly_subject,
-                            email_api_key_file=email_api_key_file, email_from_email=email_from_email,
-                            test_room_limit=test_room_limit,
-                            test_email_list=test_email_list,
-                            all_organizer_email_list=all_organizer_email_list)
+        if upload_room:
+            # do the upload from local to google sheets
+            upload_room_reports(drive_service, str_report_dir_to_upload, organizer_email_list,
+                                folder_id=room_folder_id, send_email_flag=send_email_flag,
+                                weekly_msg=org_weekly_msg, weekly_subject=org_weekly_subject,
+                                monthly_msg=org_monthly_msg, monthly_subject=org_monthly_subject,
+                                email_api_key_file=email_api_key_file, email_from_email=email_from_email,
+                                test_room_limit=test_room_limit,
+                                test_email_list=test_email_list,
+                                all_organizer_email_list=all_organizer_email_list)
+
+    run_with_busy_window(_do_uploads, "Uploading",
+                         "Uploading reports to Google Drive…\n\nProgress is shown in the terminal.")
